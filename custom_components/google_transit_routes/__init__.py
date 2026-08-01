@@ -6,7 +6,9 @@ import logging
 from pathlib import Path
 
 import voluptuous as vol
+from aiohttp import web
 from homeassistant.components.frontend import add_extra_js_url
+from homeassistant.components.http import KEY_HASS, HomeAssistantView
 from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse, SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
@@ -97,32 +99,48 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
+class _CardJSView(HomeAssistantView):
+    """Serve the Lovelace card JS with an explicit Cache-Control: no-store.
+
+    HA's built-in static-path helper either sets an aggressive 31-day cache
+    (cache_headers=True) or no Cache-Control header at all
+    (cache_headers=False) — neither is safe here: with no explicit header, a
+    client is free to apply its own caching heuristics, and at least one
+    real client (the iOS app's WKWebView) has been observed getting stuck
+    serving a single bad/interrupted fetch indefinitely. no-store forces
+    every fetch to be a genuine network request, which combined with the
+    version-busted URL in _async_register_card removes any ambiguity.
+    """
+
+    requires_auth = False
+    url = CARD_URL_PATH
+    name = "google_transit_routes:card_js"
+
+    def __init__(self, file_path: Path) -> None:
+        """Store the on-disk path to the compiled card bundle."""
+        self._file_path = file_path
+
+    async def get(self, request: web.Request) -> web.Response:
+        """Return the card's JS source, read fresh from disk every time."""
+        hass: HomeAssistant = request.app[KEY_HASS]
+        content = await hass.async_add_executor_job(self._file_path.read_bytes)
+        return web.Response(
+            body=content,
+            content_type="text/javascript",
+            headers={"Cache-Control": "no-store"},
+        )
+
+
 async def _async_register_card(hass: HomeAssistant) -> None:
     """Serve the Lovelace card and register it as a frontend module, once."""
     registered_key = f"{DOMAIN}_card_registered"
     if hass.data.get(registered_key):
         return
 
-    file_path = str(Path(__file__).parent / "www" / CARD_FILENAME)
+    file_path = Path(__file__).parent / "www" / CARD_FILENAME
 
     try:
-        # cache_headers=False: the URL is already version-busted below, so
-        # we don't need (and don't want) the 31-day Cache-Control that
-        # cache_headers=True would add. A single interrupted fetch of an
-        # aggressively-cached response can otherwise get a client (e.g. the
-        # iOS app's WKWebView) stuck serving a broken response for a month;
-        # plain static serving still supports normal ETag/Last-Modified
-        # revalidation.
-        if hasattr(hass.http, "async_register_static_paths"):
-            from homeassistant.components.http import StaticPathConfig
-
-            await hass.http.async_register_static_paths(
-                [StaticPathConfig(CARD_URL_PATH, file_path, cache_headers=False)]
-            )
-        else:
-            hass.http.register_static_path(
-                CARD_URL_PATH, file_path, cache_headers=False
-            )
+        hass.http.register_view(_CardJSView(file_path))
 
         # Append the integration version so the URL itself changes on every
         # release, forcing clients to fetch the new file instead of serving

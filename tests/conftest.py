@@ -1,6 +1,6 @@
 """Shared pytest fixtures for the Google Transit Routes test suite."""
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -40,6 +40,5 @@ def stub_frontend(hass):
     does for other integrations with a Lovelace card.
     """
     hass.http = MagicMock()
-    hass.http.async_register_static_paths = AsyncMock()
     hass.data.setdefault("frontend_extra_module_url", set())
     return hass.http
