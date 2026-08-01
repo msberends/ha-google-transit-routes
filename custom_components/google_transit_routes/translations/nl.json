@@ -1,0 +1,151 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Google Transit Routes",
+        "description": "Voer uw Google Routes API-sleutel in. Deze wordt gevalideerd met een testverzoek.",
+        "data": {
+          "api_key": "API-sleutel"
+        }
+      },
+      "add_route": {
+        "title": "Een opgeslagen route toevoegen (optioneel)",
+        "description": "U kunt nu een genoemde route toevoegen, of dit overslaan en alleen de get_transit_route-actie gebruiken voor losse aanvragen.",
+        "data": {
+          "name": "Naam",
+          "origin": "Vertrekpunt",
+          "destination": "Bestemming",
+          "language": "Taal",
+          "add_another": "Nog een route toevoegen hierna"
+        }
+      }
+    },
+    "error": {
+      "invalid_api_key": "De API-sleutel is ongeldig of heeft de Routes API niet ingeschakeld.",
+      "invalid_request": "Het testverzoek is afgewezen. Controleer de API-sleutel en probeer het opnieuw.",
+      "rate_limited": "Het API-quotum is overschreden. Probeer het later opnieuw.",
+      "cannot_connect": "Kon geen verbinding maken met de Google Routes API.",
+      "unknown": "Onverwachte fout."
+    },
+    "abort": {
+      "already_configured": "Google Transit Routes is al geconfigureerd."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Google Transit Routes opties",
+        "menu_options": {
+          "change_api_key": "API-sleutel wijzigen",
+          "add_route": "Een opgeslagen route toevoegen",
+          "remove_route": "Een opgeslagen route verwijderen"
+        }
+      },
+      "change_api_key": {
+        "title": "API-sleutel wijzigen",
+        "data": {
+          "api_key": "API-sleutel"
+        }
+      },
+      "add_route": {
+        "title": "Een opgeslagen route toevoegen",
+        "data": {
+          "name": "Naam",
+          "origin": "Vertrekpunt",
+          "destination": "Bestemming",
+          "language": "Taal"
+        }
+      },
+      "remove_route": {
+        "title": "Een opgeslagen route verwijderen",
+        "data": {
+          "route_name": "Te verwijderen route(s)"
+        }
+      }
+    },
+    "error": {
+      "invalid_api_key": "De API-sleutel is ongeldig of heeft de Routes API niet ingeschakeld.",
+      "invalid_request": "Het testverzoek is afgewezen. Controleer de API-sleutel en probeer het opnieuw.",
+      "rate_limited": "Het API-quotum is overschreden. Probeer het later opnieuw.",
+      "cannot_connect": "Kon geen verbinding maken met de Google Routes API.",
+      "unknown": "Onverwachte fout."
+    },
+    "abort": {
+      "no_routes": "Er zijn geen opgeslagen routes om te verwijderen."
+    }
+  },
+  "services": {
+    "get_transit_route": {
+      "name": "Reisroute ophalen (OV)",
+      "description": "Haal een openbaar-vervoerroute op met volledige dienstregelingsgegevens, inclusief geplande aankomst- en vertrektijden, lijnen en haltes.",
+      "fields": {
+        "origin": {
+          "name": "Vertrekpunt",
+          "description": "Startpunt. Adres, \"lat,lng\"-coördinaten, of entity-ID (zone.xxx, person.xxx, device_tracker.xxx)."
+        },
+        "destination": {
+          "name": "Bestemming",
+          "description": "Eindpunt. Dezelfde formaten als vertrekpunt."
+        },
+        "language": {
+          "name": "Taal",
+          "description": "BCP-47-taalcode voor gelokaliseerde tekst in het antwoord."
+        },
+        "departure_time": {
+          "name": "Vertrektijd",
+          "description": "Gewenste vertrektijd in ISO 8601 / RFC 3339-formaat. Kan niet gecombineerd worden met arrival_time."
+        },
+        "arrival_time": {
+          "name": "Aankomsttijd",
+          "description": "Gewenste aankomsttijd in ISO 8601 / RFC 3339-formaat. Kan niet gecombineerd worden met departure_time."
+        },
+        "alternatives": {
+          "name": "Alternatieve routes",
+          "description": "Of er tot 3 alternatieve routes worden geretourneerd."
+        },
+        "transit_mode": {
+          "name": "Voorkeur vervoerswijze",
+          "description": "Gewenste vervoersty(pe)(n)."
+        },
+        "routing_preference": {
+          "name": "Routevoorkeur",
+          "description": "Voorkeur voor de OV-route."
+        }
+      }
+    },
+    "get_travel_time": {
+      "name": "Reistijd ophalen",
+      "description": "Haal reistijd en afstand op voor auto, lopen, fietsen of snorfiets/scooter.",
+      "fields": {
+        "origin": {
+          "name": "Vertrekpunt",
+          "description": "Startpunt. Adres, \"lat,lng\"-coördinaten, of entity-ID (zone.xxx, person.xxx, device_tracker.xxx)."
+        },
+        "destination": {
+          "name": "Bestemming",
+          "description": "Eindpunt. Dezelfde formaten als vertrekpunt."
+        },
+        "mode": {
+          "name": "Vervoerswijze",
+          "description": "Wijze van vervoer."
+        },
+        "language": {
+          "name": "Taal",
+          "description": "BCP-47-taalcode voor gelokaliseerde tekst in het antwoord."
+        },
+        "departure_time": {
+          "name": "Vertrektijd",
+          "description": "Gewenste vertrektijd in ISO 8601 / RFC 3339-formaat."
+        },
+        "avoid": {
+          "name": "Vermijden",
+          "description": "Routekenmerken om te vermijden."
+        },
+        "traffic_model": {
+          "name": "Verkeersmodel",
+          "description": "Verkeersvoorspellingsmodel voor autoroutes met een vertrektijd."
+        }
+      }
+    }
+  }
+}

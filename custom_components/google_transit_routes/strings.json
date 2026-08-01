@@ -1,0 +1,151 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Google Transit Routes",
+        "description": "Enter your Google Routes API key. It will be validated with a test request.",
+        "data": {
+          "api_key": "API key"
+        }
+      },
+      "add_route": {
+        "title": "Add a saved route (optional)",
+        "description": "You can add a named route now, or skip this and only use the get_transit_route action for on-demand queries.",
+        "data": {
+          "name": "Name",
+          "origin": "Origin",
+          "destination": "Destination",
+          "language": "Language",
+          "add_another": "Add another route after this one"
+        }
+      }
+    },
+    "error": {
+      "invalid_api_key": "The API key is invalid or does not have the Routes API enabled.",
+      "invalid_request": "The test request was rejected. Check the API key and try again.",
+      "rate_limited": "The API quota has been exceeded. Try again later.",
+      "cannot_connect": "Could not connect to the Google Routes API.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "Google Transit Routes is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Google Transit Routes options",
+        "menu_options": {
+          "change_api_key": "Change API key",
+          "add_route": "Add a saved route",
+          "remove_route": "Remove a saved route"
+        }
+      },
+      "change_api_key": {
+        "title": "Change API key",
+        "data": {
+          "api_key": "API key"
+        }
+      },
+      "add_route": {
+        "title": "Add a saved route",
+        "data": {
+          "name": "Name",
+          "origin": "Origin",
+          "destination": "Destination",
+          "language": "Language"
+        }
+      },
+      "remove_route": {
+        "title": "Remove a saved route",
+        "data": {
+          "route_name": "Route(s) to remove"
+        }
+      }
+    },
+    "error": {
+      "invalid_api_key": "The API key is invalid or does not have the Routes API enabled.",
+      "invalid_request": "The test request was rejected. Check the API key and try again.",
+      "rate_limited": "The API quota has been exceeded. Try again later.",
+      "cannot_connect": "Could not connect to the Google Routes API.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "no_routes": "There are no saved routes to remove."
+    }
+  },
+  "services": {
+    "get_transit_route": {
+      "name": "Get transit route",
+      "description": "Get public transit route with full timetable data including scheduled arrival and departure times, transit lines, and stops.",
+      "fields": {
+        "origin": {
+          "name": "Origin",
+          "description": "Starting point. Address, \"lat,lng\" coordinates, or entity ID (zone.xxx, person.xxx, device_tracker.xxx)."
+        },
+        "destination": {
+          "name": "Destination",
+          "description": "End point. Same formats as origin."
+        },
+        "language": {
+          "name": "Language",
+          "description": "BCP-47 language code for localised text in the response."
+        },
+        "departure_time": {
+          "name": "Departure time",
+          "description": "Desired departure time in ISO 8601 / RFC 3339 format. Cannot be combined with arrival_time."
+        },
+        "arrival_time": {
+          "name": "Arrival time",
+          "description": "Desired arrival time in ISO 8601 / RFC 3339 format. Cannot be combined with departure_time."
+        },
+        "alternatives": {
+          "name": "Alternative routes",
+          "description": "Whether to return up to 3 alternative routes."
+        },
+        "transit_mode": {
+          "name": "Preferred transit mode",
+          "description": "Preferred transit vehicle type(s)."
+        },
+        "routing_preference": {
+          "name": "Routing preference",
+          "description": "Preference for the transit route."
+        }
+      }
+    },
+    "get_travel_time": {
+      "name": "Get travel time",
+      "description": "Get driving, walking, bicycling, or two-wheeler travel time and distance between two points.",
+      "fields": {
+        "origin": {
+          "name": "Origin",
+          "description": "Starting point. Address, \"lat,lng\" coordinates, or entity ID (zone.xxx, person.xxx, device_tracker.xxx)."
+        },
+        "destination": {
+          "name": "Destination",
+          "description": "End point. Same formats as origin."
+        },
+        "mode": {
+          "name": "Travel mode",
+          "description": "Mode of transport."
+        },
+        "language": {
+          "name": "Language",
+          "description": "BCP-47 language code for localised text in the response."
+        },
+        "departure_time": {
+          "name": "Departure time",
+          "description": "Desired departure time in ISO 8601 / RFC 3339 format."
+        },
+        "avoid": {
+          "name": "Avoid",
+          "description": "Route features to avoid."
+        },
+        "traffic_model": {
+          "name": "Traffic model",
+          "description": "Traffic prediction model to use for driving routes with a departure time."
+        }
+      }
+    }
+  }
+}

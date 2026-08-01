@@ -1,0 +1,12 @@
+{
+  "domain": "google_transit_routes",
+  "name": "Google Transit Routes",
+  "codeowners": ["@msberends"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/msberends/ha-google-transit-routes",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/msberends/ha-google-transit-routes/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

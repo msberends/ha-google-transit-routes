@@ -1,0 +1,14 @@
+{
+  "routes": [
+    {
+      "duration": "3695s",
+      "staticDuration": "3695s",
+      "distanceMeters": 78005,
+      "localizedValues": {
+        "distance": { "text": "78,0 km" },
+        "duration": { "text": "1 uur 2 min." },
+        "staticDuration": { "text": "1 uur 2 min." }
+      }
+    }
+  ]
+}

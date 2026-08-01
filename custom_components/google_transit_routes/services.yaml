@@ -1,0 +1,158 @@
+get_transit_route:
+  name: Get transit route
+  description: >
+    Get public transit route with full timetable data including
+    scheduled arrival and departure times, transit lines, and stops.
+  fields:
+    origin:
+      name: Origin
+      description: Starting point. Address, "lat,lng" coordinates, or entity ID (zone.xxx, person.xxx, device_tracker.xxx).
+      required: true
+      example: "UMCG Noord, Groningen"
+      selector:
+        text:
+    destination:
+      name: Destination
+      description: End point. Same formats as origin.
+      required: true
+      example: "Station Meadowfield"
+      selector:
+        text:
+    language:
+      name: Language
+      description: BCP-47 language code for localised text in the response.
+      required: false
+      default: "en"
+      example: "nl"
+      selector:
+        text:
+    departure_time:
+      name: Departure time
+      description: Desired departure time in ISO 8601 / RFC 3339 format. Cannot be combined with arrival_time.
+      required: false
+      example: "2026-08-01T08:00:00+02:00"
+      selector:
+        text:
+    arrival_time:
+      name: Arrival time
+      description: Desired arrival time in ISO 8601 / RFC 3339 format. Cannot be combined with departure_time.
+      required: false
+      example: "2026-08-01T09:00:00+02:00"
+      selector:
+        text:
+    alternatives:
+      name: Alternative routes
+      description: Whether to return up to 3 alternative routes.
+      required: false
+      default: true
+      selector:
+        boolean:
+    transit_mode:
+      name: Preferred transit mode
+      description: Preferred transit vehicle type(s).
+      required: false
+      selector:
+        select:
+          multiple: true
+          options:
+            - label: Bus
+              value: bus
+            - label: Subway
+              value: subway
+            - label: Train
+              value: train
+            - label: Light rail
+              value: light_rail
+            - label: Rail
+              value: rail
+    routing_preference:
+      name: Routing preference
+      description: Preference for the transit route.
+      required: false
+      selector:
+        select:
+          options:
+            - label: Less walking
+              value: less_walking
+            - label: Fewer transfers
+              value: fewer_transfers
+
+get_travel_time:
+  name: Get travel time
+  description: >
+    Get driving, walking, bicycling, or two-wheeler travel time and
+    distance between two points.
+  fields:
+    origin:
+      name: Origin
+      description: Starting point. Address, "lat,lng" coordinates, or entity ID (zone.xxx, person.xxx, device_tracker.xxx).
+      required: true
+      example: "UMCG Noord, Groningen"
+      selector:
+        text:
+    destination:
+      name: Destination
+      description: End point. Same formats as origin.
+      required: true
+      example: "Station Meadowfield"
+      selector:
+        text:
+    mode:
+      name: Travel mode
+      description: Mode of transport.
+      required: true
+      selector:
+        select:
+          options:
+            - label: Driving
+              value: driving
+            - label: Walking
+              value: walking
+            - label: Bicycling
+              value: bicycling
+            - label: Two-wheeler
+              value: two_wheeler
+    language:
+      name: Language
+      description: BCP-47 language code for localised text in the response.
+      required: false
+      default: "en"
+      example: "nl"
+      selector:
+        text:
+    departure_time:
+      name: Departure time
+      description: Desired departure time in ISO 8601 / RFC 3339 format.
+      required: false
+      example: "2026-08-01T08:00:00+02:00"
+      selector:
+        text:
+    avoid:
+      name: Avoid
+      description: Route features to avoid.
+      required: false
+      selector:
+        select:
+          multiple: true
+          options:
+            - label: Tolls
+              value: tolls
+            - label: Highways
+              value: highways
+            - label: Ferries
+              value: ferries
+            - label: Indoor
+              value: indoor
+    traffic_model:
+      name: Traffic model
+      description: Traffic prediction model to use for driving routes with a departure time.
+      required: false
+      selector:
+        select:
+          options:
+            - label: Best guess
+              value: best_guess
+            - label: Pessimistic
+              value: pessimistic
+            - label: Optimistic
+              value: optimistic

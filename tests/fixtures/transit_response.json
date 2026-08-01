@@ -1,0 +1,136 @@
+{
+  "routes": [
+    {
+      "duration": "4008s",
+      "distanceMeters": 42673,
+      "localizedValues": {
+        "distance": { "text": "42,7 km" },
+        "duration": { "text": "1 uur 7 min." }
+      },
+      "legs": [
+        {
+          "steps": [
+            { "travelMode": "WALK", "staticDuration": "48s" },
+            { "travelMode": "WALK", "staticDuration": "204s" },
+            { "travelMode": "WALK", "staticDuration": "155s" },
+            { "travelMode": "WALK", "staticDuration": "130s" },
+            { "travelMode": "WALK", "staticDuration": "31s" },
+            {
+              "travelMode": "TRANSIT",
+              "staticDuration": "1800s",
+              "transitDetails": {
+                "stopDetails": {
+                  "arrivalStop": { "name": "Meadowfield" },
+                  "arrivalTime": "2026-08-01T04:54:00Z",
+                  "departureStop": { "name": "Groningen" },
+                  "departureTime": "2026-08-01T04:24:00Z"
+                },
+                "localizedValues": {
+                  "arrivalTime": {
+                    "time": { "text": "06:54" },
+                    "timeZone": "Europe/Amsterdam"
+                  },
+                  "departureTime": {
+                    "time": { "text": "06:24" },
+                    "timeZone": "Europe/Amsterdam"
+                  }
+                },
+                "headsign": "Leeuwarden",
+                "transitLine": {
+                  "name": "Groningen <-> Leeuwarden ST37400",
+                  "nameShort": "Stoptrein RS1",
+                  "vehicle": { "name": { "text": "Trein" }, "type": "HEAVY_RAIL" },
+                  "agencies": [{ "name": "Arriva" }]
+                },
+                "stopCount": 6
+              }
+            },
+            { "travelMode": "WALK", "staticDuration": "71s" },
+            { "travelMode": "WALK", "staticDuration": "19s" }
+          ]
+        }
+      ]
+    },
+    {
+      "duration": "3599s",
+      "distanceMeters": 43297,
+      "localizedValues": {
+        "distance": { "text": "43,3 km" },
+        "duration": { "text": "1 uur 0 min." }
+      },
+      "legs": [
+        {
+          "steps": [
+            { "travelMode": "WALK", "staticDuration": "48s" },
+            { "travelMode": "WALK", "staticDuration": "217s" },
+            {
+              "travelMode": "TRANSIT",
+              "staticDuration": "360s",
+              "transitDetails": {
+                "stopDetails": {
+                  "arrivalStop": { "name": "Groningen, Hereplein" },
+                  "arrivalTime": "2026-08-01T05:09:00Z",
+                  "departureStop": { "name": "Groningen, W. van Doeverenplein" },
+                  "departureTime": "2026-08-01T05:03:00Z"
+                },
+                "localizedValues": {
+                  "arrivalTime": {
+                    "time": { "text": "07:09" },
+                    "timeZone": "Europe/Amsterdam"
+                  },
+                  "departureTime": {
+                    "time": { "text": "07:03" },
+                    "timeZone": "Europe/Amsterdam"
+                  }
+                },
+                "headsign": "Roden",
+                "transitLine": {
+                  "name": "Beijum - Roden",
+                  "nameShort": "4",
+                  "color": "#00bcf2",
+                  "vehicle": { "name": { "text": "Bus" }, "type": "BUS" },
+                  "agencies": [{ "name": "Qbuzz", "uri": "https://www.qbuzz.nl/" }]
+                },
+                "stopCount": 5
+              }
+            },
+            { "travelMode": "WALK", "staticDuration": "28s" },
+            { "travelMode": "WALK", "staticDuration": "185s" },
+            {
+              "travelMode": "TRANSIT",
+              "staticDuration": "1800s",
+              "transitDetails": {
+                "stopDetails": {
+                  "arrivalStop": { "name": "Meadowfield" },
+                  "arrivalTime": "2026-08-01T05:54:00Z",
+                  "departureStop": { "name": "Groningen" },
+                  "departureTime": "2026-08-01T05:24:00Z"
+                },
+                "localizedValues": {
+                  "arrivalTime": {
+                    "time": { "text": "07:54" },
+                    "timeZone": "Europe/Amsterdam"
+                  },
+                  "departureTime": {
+                    "time": { "text": "07:24" },
+                    "timeZone": "Europe/Amsterdam"
+                  }
+                },
+                "headsign": "Leeuwarden",
+                "transitLine": {
+                  "name": "Groningen <-> Leeuwarden ST37400",
+                  "nameShort": "Stoptrein RS1",
+                  "vehicle": { "name": { "text": "Trein" }, "type": "HEAVY_RAIL" },
+                  "agencies": [{ "name": "Arriva" }]
+                },
+                "stopCount": 6
+              }
+            },
+            { "travelMode": "WALK", "staticDuration": "71s" },
+            { "travelMode": "WALK", "staticDuration": "19s" }
+          ]
+        }
+      ]
+    }
+  ]
+}
