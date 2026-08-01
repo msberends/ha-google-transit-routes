@@ -263,21 +263,25 @@ That's why this integration **never polls automatically**:
 
 ```yaml
 routes:
-  - arrival_time: "2026-07-31T23:24:00Z"        # UTC, last transit leg's arrival
-    arrival_time_local: "01:24"                  # localised time string
+  - arrival_time: "2026-07-31T23:27:00Z"        # UTC, true door-to-door arrival
+    arrival_time_local: "01:27"                  # localised time string
     arrival_timezone: "Europe/Amsterdam"
-    departure_time: "2026-07-31T22:26:00Z"       # UTC, first transit leg's departure
-    departure_time_local: "00:26"
+    departure_time: "2026-07-31T22:18:00Z"       # UTC, true door-to-door departure
+    departure_time_local: "00:18"
     departure_timezone: "Europe/Amsterdam"
-    duration: 4091                                # total seconds, from the API
-    duration_text: "1 uur 8 min."
+    duration: 4140                                # total seconds, from the API
+    duration_text: "1 uur 9 min."
     duration_from_now: 3480                       # seconds from now to arrival_time
     duration_from_now_text: "58 min."              # computed fresh on every read
     distance_meters: 42900
     distance_text: "42,9 km"
     legs:
       - mode: "WALK"
-        duration: 480
+        duration: 480                             # actual walking time
+        departure_time: "2026-07-31T22:18:00Z"    # anchored to the route's departure...
+        departure_time_local: "00:18"
+        arrival_time: "2026-07-31T22:26:00Z"      # ...and to the next leg's departure
+        arrival_time_local: "00:26"
       - mode: "BUS"
         line_name: "4"                            # nameShort, falls back to full name
         line_full_name: "Station Noord - HS - Korreweg - P+R Hoogkerk"
@@ -293,7 +297,11 @@ routes:
         line_color: "#007bff"
         vehicle_type: "BUS"
       - mode: "WALK"
-        duration: 240
+        duration: 240                             # actual walking time — the leg
+        departure_time: "2026-07-31T22:31:00Z"    # itself spans longer (22:31→22:54)
+        departure_time_local: "00:31"              # because it also covers the wait
+        arrival_time: "2026-07-31T22:54:00Z"       # for the connecting train
+        arrival_time_local: "00:54"
       - mode: "HEAVY_RAIL"
         line_name: "Stoptrein"
         line_full_name: "Groningen <-> Leeuwarden ST37400"
@@ -307,19 +315,42 @@ routes:
         stop_count: 11
         agency: "Arriva"
         vehicle_type: "HEAVY_RAIL"
+      - mode: "WALK"
+        duration: 180
+        departure_time: "2026-07-31T23:24:00Z"
+        departure_time_local: "01:24"
+        arrival_time: "2026-07-31T23:27:00Z"
+        arrival_time_local: "01:27"
     attribution: "Powered by Google"
-  - arrival_time: "2026-08-01T00:27:00Z"          # second (later) route option
+  - arrival_time: "2026-08-01T00:30:00Z"          # second (later) route option
     # ... same structure as above ...
 ```
 
 Notes:
 
-- Top-level `arrival_time`/`departure_time` refer to the **transit** legs
-  only (not any trailing/leading walk), since that's what matters when you
-  ask "when does the train arrive".
-- `legs` always includes `WALK` segments with their `duration`, so you can
-  see the full picture from door to door. Consecutive walking directions
-  from Google are merged into a single leg per transfer.
+- Top-level `arrival_time`/`departure_time` are the true **door-to-door**
+  times: they include any walk before boarding the first vehicle or after
+  alighting the last one, not just the vehicle's own schedule. They're
+  derived from the API's total route `duration`, so any waiting time it
+  bakes in (e.g. arriving at a stop before the vehicle departs) is preserved
+  automatically.
+- `legs` always includes `WALK` segments with their own `duration` (the
+  actual walking time), plus `departure_time`/`arrival_time` anchored to the
+  transit legs immediately before/after. A walk leg's own time *span* can be
+  longer than its `duration` when it's followed by a wait — see the second
+  `WALK` leg above: 240s of actual walking, but the leg spans 22:31→22:54
+  because the train doesn't leave until then. This keeps every leg chained
+  end to end with no gaps: each leg's `arrival_time` always equals the next
+  leg's `departure_time`. Consecutive walking directions from Google are
+  merged into a single leg per transfer. The dashboard card's journey bar
+  reflects this too — a walk block is split into a striped "walking" part
+  and a flat "waiting" part sized by their actual proportions, so a short
+  walk before a late-departing connection doesn't just look like a long
+  walk:
+
+  ![Journey bar showing a bus leg, then a walk block split into a short
+  striped walking part and a longer flat waiting part before a
+  train](docs/screenshot-journey-bar.png)
 - `line_name` prefers `transitLine.nameShort` (e.g. `"4"`) over the full
   route description, because that's what's printed on the vehicle. Both are
   included.

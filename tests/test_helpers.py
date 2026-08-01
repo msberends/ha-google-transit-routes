@@ -145,15 +145,22 @@ def test_parse_transit_response_transit_leg_fields():
 
 
 def test_parse_transit_response_top_level_fields():
-    """Top-level arrival/departure reflect the transit legs, not the walks."""
+    """Top-level arrival/departure are the true door-to-door times, including
+    the walk before boarding and after alighting — not just the vehicle's own
+    schedule. The fixture's last leg is a 90s trailing walk, so arrival is
+    90s after the train itself arrives (04:54:00Z); departure is derived by
+    subtracting the route's total duration (4008s) from that true arrival,
+    which absorbs the ~26 minutes of walking-to-the-stop-and-waiting before
+    the train departs at 04:24:00Z.
+    """
     routes = parse_transit_response(_load_fixture("transit_response.json"), "nl")
     route = routes[0]
 
-    assert route["arrival_time"] == "2026-08-01T04:54:00Z"
-    assert route["arrival_time_local"] == "06:54"
+    assert route["arrival_time"] == "2026-08-01T04:55:30Z"
+    assert route["arrival_time_local"] == "06:55"
     assert route["arrival_timezone"] == "Europe/Amsterdam"
-    assert route["departure_time"] == "2026-08-01T04:24:00Z"
-    assert route["departure_time_local"] == "06:24"
+    assert route["departure_time"] == "2026-08-01T03:48:42Z"
+    assert route["departure_time_local"] == "05:48"
     assert route["duration"] == 4008
     assert route["duration_text"] == "1 uur 7 min."
     assert route["distance_meters"] == 42673
@@ -172,6 +179,42 @@ def test_parse_transit_response_second_route_has_two_transit_legs():
     assert transit_legs[0]["line_name"] == "4"
     assert transit_legs[0]["line_color"] == "#00bcf2"
     assert transit_legs[1]["mode"] == "HEAVY_RAIL"
+
+
+def test_parse_transit_response_walk_legs_are_anchored_with_no_gaps():
+    """WALK legs get absolute times chained to their neighbouring transit legs,
+    so consecutive legs always meet exactly with no unexplained gap — any
+    waiting time (e.g. arriving at a stop before the vehicle departs, or a
+    slow transfer) is absorbed into the adjoining walk leg's span rather than
+    disappearing between two legs.
+    """
+    routes = parse_transit_response(_load_fixture("transit_response.json"), "nl")
+    legs = routes[1]["legs"]
+
+    assert [leg["mode"] for leg in legs] == ["WALK", "BUS", "WALK", "HEAVY_RAIL", "WALK"]
+
+    # Every leg's arrival lines up exactly with the next leg's departure.
+    for current, following in zip(legs, legs[1:]):
+        assert current["arrival_time"] == following["departure_time"]
+
+    # The leading walk (route's true departure) absorbs the wait before
+    # boarding the bus: real walking time is 265s, but the bus doesn't leave
+    # until 184s later.
+    leading_walk = legs[0]
+    assert leading_walk["departure_time"] == routes[1]["departure_time"]
+    assert leading_walk["arrival_time"] == legs[1]["departure_time"] == "2026-08-01T05:03:00Z"
+
+    # The transfer walk absorbs the wait between the bus arriving and the
+    # train departing: real walking time is 213s, but the gap is 900s.
+    transfer_walk = legs[2]
+    assert transfer_walk["departure_time"] == legs[1]["arrival_time"] == "2026-08-01T05:09:00Z"
+    assert transfer_walk["arrival_time"] == legs[3]["departure_time"] == "2026-08-01T05:24:00Z"
+
+    # The trailing walk (route's true arrival) matches its own real duration
+    # exactly, since nothing follows it to introduce a gap.
+    trailing_walk = legs[4]
+    assert trailing_walk["departure_time"] == legs[3]["arrival_time"] == "2026-08-01T05:54:00Z"
+    assert trailing_walk["arrival_time"] == routes[1]["arrival_time"] == "2026-08-01T05:55:30Z"
 
 
 def test_parse_transit_response_empty_routes_returns_empty_list():

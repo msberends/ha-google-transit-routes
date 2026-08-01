@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime, timedelta
 from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
@@ -201,6 +203,60 @@ def _seconds_between(start: str | None, end: str | None) -> int | None:
     return int((end_dt - start_dt).total_seconds())
 
 
+def _format_iso_utc(moment: datetime) -> str:
+    """Format a timezone-aware datetime as the Zulu ISO string Google's API uses."""
+    return dt_util.as_utc(moment).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _format_local_time(moment: datetime, tz_name: str | None) -> str:
+    """Format a datetime as a 24-hour HH:MM string in the given IANA timezone."""
+    if tz_name:
+        try:
+            moment = moment.astimezone(ZoneInfo(tz_name))
+        except ZoneInfoNotFoundError:
+            pass
+    return moment.strftime("%H:%M")
+
+
+def _anchor_walk_leg_times(
+    legs: list[dict[str, Any]],
+    departure_dt: datetime,
+    arrival_dt: datetime,
+    tz_name: str | None,
+) -> None:
+    """Fill in absolute departure/arrival times for WALK legs.
+
+    WALK steps only carry a relative duration, no absolute timestamps. Anchor
+    each one to its neighbouring transit legs' real (Google-provided)
+    timestamps — a walk between two transit legs spans exactly from the
+    previous arrival to the next departure, absorbing any transfer wait
+    rather than leaving an unexplained gap. The leading/trailing walk (if
+    any) anchors to the route's own true departure/arrival, which already
+    accounts for the whole trip via `route.duration`. This keeps every leg's
+    times chained end-to-end with no gaps, so each block's start is exactly
+    the previous block's end.
+    """
+    for i, leg in enumerate(legs):
+        if "line_name" in leg:
+            continue  # transit legs already have absolute times from the API
+
+        start_dt = (
+            departure_dt
+            if i == 0
+            else dt_util.parse_datetime(legs[i - 1]["arrival_time"])
+        )
+        end_dt = (
+            arrival_dt
+            if i == len(legs) - 1
+            else dt_util.parse_datetime(legs[i + 1]["departure_time"])
+        )
+
+        leg["departure_time"] = _format_iso_utc(start_dt)
+        leg["departure_time_local"] = _format_local_time(start_dt, tz_name)
+        leg["arrival_time"] = _format_iso_utc(end_dt)
+        leg["arrival_time_local"] = _format_local_time(end_dt, tz_name)
+
+
 def _parse_transit_route(route: dict[str, Any], language: str) -> dict[str, Any] | None:
     """Parse a single raw route object into the documented clean structure."""
     steps = _iter_transit_steps(route)
@@ -210,23 +266,43 @@ def _parse_transit_route(route: dict[str, Any], language: str) -> dict[str, Any]
     if not transit_legs:
         return None
 
-    first_transit = transit_legs[0]
     last_transit = transit_legs[-1]
 
     localized = route.get("localizedValues", {})
     duration = _parse_duration_seconds(route.get("duration"))
 
+    arrival_timezone = _transit_timezone(steps, last=True)
+    departure_timezone = _transit_timezone(steps, last=False)
+    route_timezone = arrival_timezone or departure_timezone
+
+    # The route's true door-to-door arrival/departure must include any walk
+    # before boarding the first vehicle or after alighting the last one —
+    # last_transit["arrival_time"] alone is when the *vehicle* arrives, not
+    # when you actually get to your destination. Derive the true departure
+    # from Google's own total route duration, so any waiting time it bakes
+    # in (e.g. arriving early for a scheduled departure) is preserved
+    # without us having to model where exactly it occurs.
+    trailing_walk_duration = 0
+    if legs and legs[-1]["mode"] == "WALK":
+        trailing_walk_duration = legs[-1].get("duration") or 0
+
+    last_transit_arrival_dt = dt_util.parse_datetime(last_transit["arrival_time"])
+    arrival_dt = last_transit_arrival_dt + timedelta(seconds=trailing_walk_duration)
+    departure_dt = arrival_dt - timedelta(seconds=duration)
+
+    _anchor_walk_leg_times(legs, departure_dt, arrival_dt, route_timezone)
+
     duration_from_now, duration_from_now_text = compute_duration_from_now(
-        last_transit["arrival_time"], language
+        _format_iso_utc(arrival_dt), language
     )
 
     return {
-        "arrival_time": last_transit["arrival_time"],
-        "arrival_time_local": last_transit["arrival_time_local"],
-        "arrival_timezone": _transit_timezone(steps, last=True),
-        "departure_time": first_transit["departure_time"],
-        "departure_time_local": first_transit["departure_time_local"],
-        "departure_timezone": _transit_timezone(steps, last=False),
+        "arrival_time": _format_iso_utc(arrival_dt),
+        "arrival_time_local": _format_local_time(arrival_dt, route_timezone),
+        "arrival_timezone": arrival_timezone,
+        "departure_time": _format_iso_utc(departure_dt),
+        "departure_time_local": _format_local_time(departure_dt, route_timezone),
+        "departure_timezone": departure_timezone,
         "duration": duration,
         "duration_text": localized.get("duration", {}).get("text"),
         "duration_from_now": duration_from_now,
