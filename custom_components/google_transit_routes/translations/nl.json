@@ -25,7 +25,7 @@
     },
     "abort": {
       "already_configured": "Google Transit Routes is al geconfigureerd.",
-      "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
+      "reconfigure_successful": "Herconfiguratie geslaagd."
     }
   },
   "config_subentries": {
@@ -53,15 +53,15 @@
         "reconfigure": {
           "title": "Opgeslagen route bewerken",
           "data": {
-            "name": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::name%]",
-            "origin": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::origin%]",
-            "destination": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::destination%]",
-            "language": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::language%]"
+            "name": "Naam",
+            "origin": "Vertrekpunt",
+            "destination": "Bestemming",
+            "language": "Taal"
           },
           "data_description": {
-            "name": "[%key:component::google_transit_routes::config_subentries::route::step::user::data_description::name%]",
-            "origin": "[%key:component::google_transit_routes::config_subentries::route::step::user::data_description::origin%]",
-            "destination": "[%key:component::google_transit_routes::config_subentries::route::step::user::data_description::destination%]"
+            "name": "Een korte, unieke naam voor deze route — wordt zowel de apparaatnaam als de naam van de sensor.",
+            "origin": "Adres, \"lat,lng\"-coördinaten, of entity-ID (zone.xxx, person.xxx, device_tracker.xxx).",
+            "destination": "Dezelfde formaten als vertrekpunt."
           }
         }
       },
@@ -69,7 +69,7 @@
         "already_configured": "Er bestaat al een opgeslagen route met deze naam."
       },
       "abort": {
-        "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
+        "reconfigure_successful": "Herconfiguratie geslaagd."
       }
     }
   },

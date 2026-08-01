@@ -86,8 +86,8 @@ export class GoogleTransitJourneyBar extends LitElement {
         45deg,
         var(--disabled-text-color, #9e9e9e),
         var(--disabled-text-color, #9e9e9e) 4px,
-        transparent 4px,
-        transparent 8px
+        var(--secondary-background-color, #e0e0e0) 4px,
+        var(--secondary-background-color, #e0e0e0) 8px
       );
     }
 
@@ -97,7 +97,11 @@ export class GoogleTransitJourneyBar extends LitElement {
     }
 
     .segment.walk ha-icon {
-      color: var(--card-background-color, #fff);
+      --mdc-icon-size: 13px;
+      color: #fff;
+      background: var(--disabled-text-color, #9e9e9e);
+      border-radius: 50%;
+      padding: 2px;
     }
 
     .line-name {

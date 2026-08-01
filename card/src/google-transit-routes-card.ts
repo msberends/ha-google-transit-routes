@@ -151,7 +151,6 @@ export class GoogleTransitRoutesCard extends LitElement {
             this._renderRoute(entityConf)
           )}
         </div>
-        <div class="attribution">Powered by Google</div>
       </ha-card>
     `;
   }
@@ -160,6 +159,8 @@ export class GoogleTransitRoutesCard extends LitElement {
     const hass = this.hass!;
     const config = this._config!;
     const stateObj = entityConf.entity ? hass.states[entityConf.entity] : undefined;
+    const language = hass.locale?.language || "en";
+    const nl = language === "nl";
 
     if (!stateObj) {
       return html`
@@ -167,7 +168,9 @@ export class GoogleTransitRoutesCard extends LitElement {
           <div class="route-header">
             <ha-icon icon=${entityConf.icon || "mdi:bus-clock"}></ha-icon>
             <span class="route-name">${entityConf.name || entityConf.entity}</span>
-            <span class="arrival">entity not found</span>
+            <span class="arrival"
+              >${nl ? "entiteit niet gevonden" : "entity not found"}</span
+            >
           </div>
         </div>
       `;
@@ -178,7 +181,7 @@ export class GoogleTransitRoutesCard extends LitElement {
     const arrivalLocal: string | undefined = attrs.arrival_time_local;
     const legs = attrs.legs || [];
     const alternatives: RouteData[] = attrs.alternative_routes || [];
-    const language = hass.locale?.language || "en";
+    const routeName = entityConf.name || attrs.friendly_name || entityConf.entity;
     const isExpanded = this._expanded.has(entityConf.entity);
     const departed = arrivalTime
       ? new Date(arrivalTime).getTime() < Date.now()
@@ -194,9 +197,13 @@ export class GoogleTransitRoutesCard extends LitElement {
       >
         <div class="route-header">
           <ha-icon icon=${entityConf.icon || "mdi:bus-clock"}></ha-icon>
-          <span class="route-name">${entityConf.name || entityConf.entity}</span>
+          <span class="route-name">${routeName}</span>
           <span class="arrival">
-            ${arrivalLocal ? html`arrival ${arrivalLocal}` : "no route found"}
+            ${arrivalLocal
+              ? html`${nl ? "aankomst" : "arrival"} ${arrivalLocal}`
+              : nl
+                ? "geen route gevonden"
+                : "no route found"}
           </span>
         </div>
 

@@ -343,8 +343,8 @@ routes:
 ## Attribution
 
 Google requires attribution for use of the Routes API. This integration
-includes "Powered by Google" in every sensor's attributes, in every action
-response, and in the Lovelace card's footer.
+includes "Powered by Google" in every sensor's attributes and in every action
+response.
 
 ## Contributing
 

@@ -25,7 +25,7 @@
     },
     "abort": {
       "already_configured": "Google Transit Routes is already configured.",
-      "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
+      "reconfigure_successful": "Re-configuration was successful."
     }
   },
   "config_subentries": {
@@ -53,15 +53,15 @@
         "reconfigure": {
           "title": "Edit saved route",
           "data": {
-            "name": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::name%]",
-            "origin": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::origin%]",
-            "destination": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::destination%]",
-            "language": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::language%]"
+            "name": "Name",
+            "origin": "Origin",
+            "destination": "Destination",
+            "language": "Language"
           },
           "data_description": {
-            "name": "[%key:component::google_transit_routes::config_subentries::route::step::user::data_description::name%]",
-            "origin": "[%key:component::google_transit_routes::config_subentries::route::step::user::data_description::origin%]",
-            "destination": "[%key:component::google_transit_routes::config_subentries::route::step::user::data_description::destination%]"
+            "name": "A short, unique label for this route — becomes both the device name and the sensor's name.",
+            "origin": "Address, \"lat,lng\" coordinates, or entity ID (zone.xxx, person.xxx, device_tracker.xxx).",
+            "destination": "Same formats as origin."
           }
         }
       },
@@ -69,7 +69,7 @@
         "already_configured": "A saved route with this name already exists."
       },
       "abort": {
-        "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
+        "reconfigure_successful": "Re-configuration was successful."
       }
     }
   },

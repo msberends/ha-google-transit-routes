@@ -116,13 +116,6 @@ export const cardStyles = css`
     white-space: nowrap;
   }
 
-  .attribution {
-    text-align: right;
-    font-size: 0.7em;
-    color: var(--disabled-text-color, #999);
-    padding: 4px 4px 0 0;
-  }
-
   /* Explicit theme overrides for theme: "light" / "dark" (theme: "auto" just
      inherits the ambient Home Assistant theme variables, no override needed). */
   :host(.force-light) {

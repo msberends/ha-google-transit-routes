@@ -72,8 +72,7 @@ class GoogleTransitSensor(CoordinatorEntity[GoogleTransitRouteCoordinator], Sens
             entry_type=DeviceEntryType.SERVICE,
             identifiers={(DOMAIN, subentry.subentry_id)},
             name=subentry.title,
-            manufacturer="Google",
-            model="Transit route",
+            manufacturer="Matthijs Berends",
         )
 
     @property

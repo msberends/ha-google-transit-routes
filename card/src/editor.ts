@@ -122,6 +122,7 @@ export class GoogleTransitRoutesCardEditor extends LitElement {
                   )}
               ></ha-textfield>
               <ha-icon-picker
+                label="Icon (optional)"
                 .hass=${this.hass}
                 .value=${entityConf.icon || ""}
                 @value-changed=${(e: CustomEvent) =>
