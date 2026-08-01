@@ -232,11 +232,16 @@ export class GoogleTransitRoutesCard extends LitElement {
         ${config.show_legs && legs.length
           ? html`<google-transit-journey-bar
               .legs=${legs}
+              .expanded=${isExpanded}
+              .language=${language}
             ></google-transit-journey-bar>`
           : nothing}
         ${hasAlternatives && isExpanded
           ? html`
               <div class="alternatives">
+                <strong class="alternatives-label"
+                  >${nl ? "Alternatieven:" : "Alternatives:"}</strong
+                >
                 ${alternatives.slice(0, 3).map(
                   (alt) => html`
                     <div class="alternative-row">

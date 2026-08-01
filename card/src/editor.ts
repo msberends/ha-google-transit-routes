@@ -25,7 +25,11 @@ export class GoogleTransitRoutesCardEditor extends LitElement {
   private _fireChanged(config: GoogleTransitRoutesCardConfig): void {
     this._config = config;
     this.dispatchEvent(
-      new CustomEvent("config-changed", { detail: { config } })
+      new CustomEvent("config-changed", {
+        detail: { config },
+        bubbles: true,
+        composed: true,
+      })
     );
   }
 

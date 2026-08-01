@@ -105,6 +105,11 @@ export const cardStyles = css`
     color: var(--secondary-text-color);
   }
 
+  .alternatives-label {
+    color: var(--primary-text-color);
+    font-size: 0.95em;
+  }
+
   .alternative-row {
     display: flex;
     justify-content: space-between;

@@ -8,6 +8,8 @@ import { formatDuration } from "./duration";
 @customElement("google-transit-journey-bar")
 export class GoogleTransitJourneyBar extends LitElement {
   @property({ attribute: false }) public legs: LegData[] = [];
+  @property({ attribute: false }) public expanded = false;
+  @property({ attribute: false }) public language = "en";
 
   protected render() {
     if (!this.legs?.length) {
@@ -72,6 +74,19 @@ export class GoogleTransitJourneyBar extends LitElement {
             html`<span>${this._legTimeLabel(leg, spans[i])}</span>`
         )}
       </div>
+      ${this.expanded
+        ? html`<div
+            class="leg-details"
+            style="grid-template-columns: ${gridTemplateColumns}"
+          >
+            ${this.legs.map(
+              (leg) =>
+                html`<span title=${this._legDetailLabel(leg)}
+                  >${this._legDetailLabel(leg)}</span
+                >`
+            )}
+          </div>`
+        : nothing}
     `;
   }
 
@@ -83,6 +98,26 @@ export class GoogleTransitJourneyBar extends LitElement {
     return spanSeconds > 0
       ? `${leg.departure_time_local} (${formatDuration(spanSeconds)})`
       : leg.departure_time_local;
+  }
+
+  /** "Groningen → UMCG Noord · 4 stops" — only meaningful for transit legs. */
+  private _legDetailLabel(leg: LegData): string {
+    if (leg.mode === "WALK" || !leg.departure_stop || !leg.arrival_stop) {
+      return "";
+    }
+    const nl = this.language === "nl";
+    const stops = leg.stop_count
+      ? ` · ${leg.stop_count} ${
+          nl
+            ? leg.stop_count === 1
+              ? "halte"
+              : "haltes"
+            : leg.stop_count === 1
+              ? "stop"
+              : "stops"
+        }`
+      : "";
+    return `${leg.departure_stop} → ${leg.arrival_stop}${stops}`;
   }
 
   /** Elapsed seconds for a leg: its actual departure→arrival span when known
@@ -180,6 +215,23 @@ export class GoogleTransitJourneyBar extends LitElement {
       overflow: visible;
       white-space: nowrap;
       text-align: left;
+    }
+
+    .leg-details {
+      display: grid;
+      grid-auto-flow: column;
+      font-size: 0.72em;
+      font-style: italic;
+      color: var(--secondary-text-color, #727272);
+      margin-top: 2px;
+    }
+
+    .leg-details span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
+      padding-right: 6px;
     }
   `;
 }
