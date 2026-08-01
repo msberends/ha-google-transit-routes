@@ -108,12 +108,51 @@ export const cardStyles = css`
   .alternative-row {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 8px;
   }
 
   .alt-legs {
-    font-weight: 600;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .alt-leg {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
     white-space: nowrap;
+  }
+
+  .alt-line-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    padding: 1px 4px;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95em;
+  }
+
+  .alt-mode-icon,
+  .alt-walk-icon {
+    --mdc-icon-size: 15px;
+  }
+
+  .alt-mode-icon {
+    color: var(--secondary-text-color, #727272);
+  }
+
+  .alt-walk-icon {
+    color: #fff;
+    background: var(--disabled-text-color, #9e9e9e);
+    border-radius: 50%;
+    padding: 2px;
   }
 
   /* Explicit theme overrides for theme: "light" / "dark" (theme: "auto" just

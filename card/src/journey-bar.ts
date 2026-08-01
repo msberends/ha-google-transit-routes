@@ -1,18 +1,8 @@
 import { LitElement, html, css, nothing } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import type { LegData } from "./types";
-
-const VEHICLE_ICONS: Record<string, string> = {
-  BUS: "mdi:bus",
-  TRAM: "mdi:tram",
-  SUBWAY: "mdi:subway",
-  HEAVY_RAIL: "mdi:train",
-  RAIL: "mdi:train",
-  COMMUTER_TRAIN: "mdi:train",
-  LIGHT_RAIL: "mdi:tram",
-  FERRY: "mdi:ferry",
-  WALK: "mdi:walk",
-};
+import { VEHICLE_ICONS } from "./icons";
+import { formatDuration } from "./duration";
 
 /** Horizontal journey bar: one coloured segment per transit leg, striped for walks. */
 @customElement("google-transit-journey-bar")
@@ -91,23 +81,8 @@ export class GoogleTransitJourneyBar extends LitElement {
       return "";
     }
     return spanSeconds > 0
-      ? `${leg.departure_time_local} (${this._formatDuration(spanSeconds)})`
+      ? `${leg.departure_time_local} (${formatDuration(spanSeconds)})`
       : leg.departure_time_local;
-  }
-
-  /** "1h22m33s" / "22m33s" / "33s" — no rounding, no leading zeroes. */
-  private _formatDuration(totalSeconds: number): string {
-    const seconds = Math.floor(totalSeconds % 60);
-    const totalMinutes = Math.floor(totalSeconds / 60);
-    const minutes = totalMinutes % 60;
-    const hours = Math.floor(totalMinutes / 60);
-    if (hours > 0) {
-      return `${hours}h${minutes}m${seconds}s`;
-    }
-    if (minutes > 0) {
-      return `${minutes}m${seconds}s`;
-    }
-    return `${seconds}s`;
   }
 
   /** Elapsed seconds for a leg: its actual departure→arrival span when known

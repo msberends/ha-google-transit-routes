@@ -3,12 +3,19 @@ import { customElement, property, state } from "lit/decorators.js";
 import "./countdown";
 import "./journey-bar";
 import { cardStyles } from "./styles";
+import { VEHICLE_ICONS } from "./icons";
+import { formatDuration } from "./duration";
 import type {
   EntityConfig,
   GoogleTransitRoutesCardConfig,
   HomeAssistant,
+  LegData,
   RouteData,
 } from "./types";
+
+/** Modes with a meaningful short line number/name (e.g. bus "4"), shown as a
+ * coloured badge. Everything else (trains, ferries, walking) is icon-only. */
+const NUMBERED_LINE_MODES = new Set(["BUS", "TRAM", "SUBWAY", "LIGHT_RAIL"]);
 
 const CARD_VERSION = "0.1.0";
 
@@ -238,10 +245,12 @@ export class GoogleTransitRoutesCard extends LitElement {
                         (${alt.duration_text})
                       </span>
                       <span class="alt-legs">
-                        ${(alt.legs || [])
-                          .filter((leg) => leg.mode !== "WALK")
-                          .map((leg) => leg.line_name)
-                          .join(" + ")}
+                        ${(alt.legs || []).map(
+                          (leg, i) =>
+                            html`${i > 0 ? ", " : ""}${this._renderAltLeg(
+                              leg
+                            )}`
+                        )}
                       </span>
                     </div>
                   `
@@ -251,6 +260,31 @@ export class GoogleTransitRoutesCard extends LitElement {
           : nothing}
       </div>
     `;
+  }
+
+  /** One leg in the compact alternatives list: a coloured line-number badge
+   * for bus/tram/subway/light-rail, or a bare icon for everything else
+   * (train, ferry, walk), each followed by its duration. */
+  private _renderAltLeg(leg: LegData): TemplateResult {
+    const duration = formatDuration(leg.duration || 0);
+    if (NUMBERED_LINE_MODES.has(leg.mode) && leg.line_name) {
+      const color = leg.line_color || "var(--secondary-text-color, #727272)";
+      return html`<span class="alt-leg"
+        ><span class="alt-line-badge" style="background: ${color}"
+          >${leg.line_name}</span
+        >
+        (${duration})</span
+      >`;
+    }
+    const isWalk = leg.mode === "WALK";
+    const icon = VEHICLE_ICONS[leg.mode] ?? "mdi:map-marker-path";
+    return html`<span class="alt-leg"
+      ><ha-icon
+        class=${isWalk ? "alt-walk-icon" : "alt-mode-icon"}
+        icon=${icon}
+      ></ha-icon>
+      (${duration})</span
+    >`;
   }
 
   static styles = cardStyles;
