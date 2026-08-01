@@ -102,25 +102,42 @@ async def _async_register_card(hass: HomeAssistant) -> None:
     registered_key = f"{DOMAIN}_card_registered"
     if hass.data.get(registered_key):
         return
-    hass.data[registered_key] = True
 
     file_path = str(Path(__file__).parent / "www" / CARD_FILENAME)
 
-    if hasattr(hass.http, "async_register_static_paths"):
-        from homeassistant.components.http import StaticPathConfig
+    try:
+        # cache_headers=False: the URL is already version-busted below, so
+        # we don't need (and don't want) the 31-day Cache-Control that
+        # cache_headers=True would add. A single interrupted fetch of an
+        # aggressively-cached response can otherwise get a client (e.g. the
+        # iOS app's WKWebView) stuck serving a broken response for a month;
+        # plain static serving still supports normal ETag/Last-Modified
+        # revalidation.
+        if hasattr(hass.http, "async_register_static_paths"):
+            from homeassistant.components.http import StaticPathConfig
 
-        await hass.http.async_register_static_paths(
-            [StaticPathConfig(CARD_URL_PATH, file_path, cache_headers=True)]
-        )
-    else:
-        hass.http.register_static_path(CARD_URL_PATH, file_path, cache_headers=True)
+            await hass.http.async_register_static_paths(
+                [StaticPathConfig(CARD_URL_PATH, file_path, cache_headers=False)]
+            )
+        else:
+            hass.http.register_static_path(
+                CARD_URL_PATH, file_path, cache_headers=False
+            )
 
-    # The static path above is cached aggressively (cache_headers=True) at a
-    # fixed URL, so browsers never revalidate it. Append the integration
-    # version so the URL itself changes on every release, forcing a fresh
-    # fetch instead of requiring users to manually clear their cache.
-    integration = await async_get_integration(hass, DOMAIN)
-    add_extra_js_url(hass, f"{CARD_URL_PATH}?v={integration.version}")
+        # Append the integration version so the URL itself changes on every
+        # release, forcing clients to fetch the new file instead of serving
+        # a previously cached one.
+        integration = await async_get_integration(hass, DOMAIN)
+        add_extra_js_url(hass, f"{CARD_URL_PATH}?v={integration.version}")
+    except Exception:  # noqa: BLE001 - registering the card must not block sensor setup
+        _LOGGER.exception("Failed to register the Lovelace card")
+        return
+
+    # Only mark registration done once every step above has actually
+    # succeeded — otherwise a transient failure here (e.g. during a racy
+    # startup) would permanently skip the card for the rest of this HA
+    # process's lifetime, with the failure never surfaced anywhere.
+    hass.data[registered_key] = True
 
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
