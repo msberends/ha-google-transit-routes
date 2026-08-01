@@ -39,6 +39,24 @@ state), but:
 - Treat anything found there as read-only evidence for debugging, not as a
   place to make changes or run experiments.
 
+## Releases
+
+Every `git push` to `main` must be paired with a GitHub release — HACS
+tracks this repo by release, not by commit, and an unreleased push left
+HACS trying (and failing) to download a commit-SHA archive URL instead of a
+proper release zipball. Concretely, whenever the user asks to commit and
+push (or just "push"), do the full sequence yourself unless told otherwise:
+
+1. Bump `"version"` in `manifest.json` (and `card/package.json`'s
+   `"version"` if the card changed) — semver, matching the size of the
+   change.
+2. Commit, then push to `main`.
+3. Tag the pushed commit with the new version number (no `v` prefix — the
+   tag must match `manifest.json`'s `version` string exactly, since that's
+   what HACS compares) and push the tag.
+4. Create a GitHub release from that tag (`gh release create`) with a short
+   summary of what changed.
+
 ## Running tests
 
 Use the venv at `.venv` in this repo (gitignored, persists across
