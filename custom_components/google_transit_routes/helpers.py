@@ -160,6 +160,8 @@ def _build_leg(step: dict[str, Any]) -> dict[str, Any]:
     agencies = transit_line.get("agencies", [])
 
     line_name = transit_line.get("nameShort") or transit_line.get("name")
+    departure_time = stop_details.get("departureTime")
+    arrival_time = stop_details.get("arrivalTime")
 
     return {
         "mode": vehicle.get("type", "TRANSIT"),
@@ -167,20 +169,36 @@ def _build_leg(step: dict[str, Any]) -> dict[str, Any]:
         "line_full_name": transit_line.get("name"),
         "headsign": details.get("headsign"),
         "departure_stop": stop_details.get("departureStop", {}).get("name"),
-        "departure_time": stop_details.get("departureTime"),
+        "departure_time": departure_time,
         "departure_time_local": localized.get("departureTime", {})
         .get("time", {})
         .get("text"),
         "arrival_stop": stop_details.get("arrivalStop", {}).get("name"),
-        "arrival_time": stop_details.get("arrivalTime"),
+        "arrival_time": arrival_time,
         "arrival_time_local": localized.get("arrivalTime", {})
         .get("time", {})
         .get("text"),
+        # Not part of the Routes API response for TRANSIT steps (only
+        # WALK/DRIVE steps carry staticDuration) — derive it from the
+        # scheduled stop times instead, so the journey bar can weight
+        # transit legs by their actual ride time.
+        "duration": _seconds_between(departure_time, arrival_time),
         "stop_count": details.get("stopCount"),
         "agency": agencies[0].get("name") if agencies else None,
         "line_color": transit_line.get("color"),
         "vehicle_type": vehicle.get("type"),
     }
+
+
+def _seconds_between(start: str | None, end: str | None) -> int | None:
+    """Return whole seconds between two ISO timestamps, or None if either is missing/invalid."""
+    if not start or not end:
+        return None
+    start_dt = dt_util.parse_datetime(start)
+    end_dt = dt_util.parse_datetime(end)
+    if start_dt is None or end_dt is None:
+        return None
+    return int((end_dt - start_dt).total_seconds())
 
 
 def _parse_transit_route(route: dict[str, Any], language: str) -> dict[str, Any] | None:

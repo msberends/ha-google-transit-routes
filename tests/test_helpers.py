@@ -138,6 +138,10 @@ def test_parse_transit_response_transit_leg_fields():
     assert transit_leg["stop_count"] == 6
     assert transit_leg["agency"] == "Arriva"
     assert transit_leg["vehicle_type"] == "HEAVY_RAIL"
+    # Not in the raw API response for TRANSIT steps (no staticDuration) —
+    # must be derived from the scheduled departure/arrival stop times so the
+    # journey bar can weight transit legs correctly against walk legs.
+    assert transit_leg["duration"] == 1800
 
 
 def test_parse_transit_response_top_level_fields():
