@@ -41,11 +41,12 @@ state), but:
 
 ## Releases
 
-Every `git push` to `main` must be paired with a GitHub release — HACS
-tracks this repo by release, not by commit, and an unreleased push left
-HACS trying (and failing) to download a commit-SHA archive URL instead of a
+Every `git push` to `main` must be paired with a GitHub release, no
+exceptions — including docs-only changes (e.g. to this file). HACS tracks
+this repo by release, not by commit, and an unreleased push left HACS
+trying (and failing) to download a commit-SHA archive URL instead of a
 proper release zipball. Concretely, whenever the user asks to commit and
-push (or just "push"), do the full sequence yourself unless told otherwise:
+push (or just "push"), do the full sequence yourself every time:
 
 1. Bump `"version"` in `manifest.json` (and `card/package.json`'s
    `"version"` if the card changed) — semver, matching the size of the
