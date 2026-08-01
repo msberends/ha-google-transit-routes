@@ -34,9 +34,12 @@ export class GoogleTransitJourneyBar extends LitElement {
     const spans = this.legs.map((leg) => this._spanSeconds(leg));
     const totalDuration = spans.reduce((sum, s) => sum + s, 0) || 1;
     const widths = spans.map((s) => Math.max((s / totalDuration) * 100, 6));
+    const gridTemplateColumns = widths
+      .map((w) => `minmax(0, ${w}fr)`)
+      .join(" ");
 
     return html`
-      <div class="bar">
+      <div class="bar" style="grid-template-columns: ${gridTemplateColumns}">
         ${this.legs.map((leg, i) => {
           const isWalk = leg.mode === "WALK";
           const icon = VEHICLE_ICONS[leg.mode] ?? "mdi:map-marker-path";
@@ -46,9 +49,7 @@ export class GoogleTransitJourneyBar extends LitElement {
           return html`
             <div
               class="segment ${isWalk ? "walk" : "transit"}"
-              style="flex-grow: ${widths[i]}; ${isWalk
-                ? ""
-                : `background: ${color};`}"
+              style=${isWalk ? "" : `background: ${color};`}
               title=${leg.line_full_name || leg.mode}
             >
               ${isWalk
@@ -64,7 +65,9 @@ export class GoogleTransitJourneyBar extends LitElement {
                           class="wait-part"
                           style="flex-grow: ${waitSeconds}"
                           title="Waiting"
-                        ></div>`
+                        >
+                          <ha-icon icon="mdi:human"></ha-icon>
+                        </div>`
                       : nothing}
                   `
                 : html`<ha-icon icon=${icon}></ha-icon
@@ -73,26 +76,38 @@ export class GoogleTransitJourneyBar extends LitElement {
           `;
         })}
       </div>
-      <div class="times">
+      <div class="times" style="grid-template-columns: ${gridTemplateColumns}">
         ${this.legs.map(
           (leg, i) =>
-            html`<span style="flex-grow: ${widths[i]}"
-              >${this._legTimeLabel(leg, spans[i])}</span
-            >`
+            html`<span>${this._legTimeLabel(leg, spans[i])}</span>`
         )}
       </div>
     `;
   }
 
-  /** "H:MM (N min)" — the end time is omitted since it's always the next block's start. */
+  /** "H:MM (duration)" — the end time is omitted since it's always the next block's start. */
   private _legTimeLabel(leg: LegData, spanSeconds: number): string {
     if (!leg.departure_time_local) {
       return "";
     }
-    const minutes = Math.round(spanSeconds / 60);
-    return minutes > 0
-      ? `${leg.departure_time_local} (${minutes} min)`
+    return spanSeconds > 0
+      ? `${leg.departure_time_local} (${this._formatDuration(spanSeconds)})`
       : leg.departure_time_local;
+  }
+
+  /** "1h22m33s" / "22m33s" / "33s" — no rounding, no leading zeroes. */
+  private _formatDuration(totalSeconds: number): string {
+    const seconds = Math.floor(totalSeconds % 60);
+    const totalMinutes = Math.floor(totalSeconds / 60);
+    const minutes = totalMinutes % 60;
+    const hours = Math.floor(totalMinutes / 60);
+    if (hours > 0) {
+      return `${hours}h${minutes}m${seconds}s`;
+    }
+    if (minutes > 0) {
+      return `${minutes}m${seconds}s`;
+    }
+    return `${seconds}s`;
   }
 
   /** Elapsed seconds for a leg: its actual departure→arrival span when known
@@ -111,7 +126,8 @@ export class GoogleTransitJourneyBar extends LitElement {
 
   static styles = css`
     .bar {
-      display: flex;
+      display: grid;
+      grid-auto-flow: column;
       height: 26px;
       border-radius: 13px;
       overflow: hidden;
@@ -125,7 +141,7 @@ export class GoogleTransitJourneyBar extends LitElement {
       gap: 3px;
       color: #fff;
       font-size: 0.72em;
-      min-width: 6px;
+      overflow: hidden;
     }
 
     .segment.walk {
@@ -152,8 +168,11 @@ export class GoogleTransitJourneyBar extends LitElement {
     /* Flat, unstriped fill: visually distinct from the walking stripe so a
        waiting stretch doesn't read as "more walking". */
     .wait-part {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       height: 100%;
-      min-width: 4px;
+      min-width: 16px;
       background: var(--secondary-background-color, #e0e0e0);
     }
 
@@ -162,7 +181,8 @@ export class GoogleTransitJourneyBar extends LitElement {
       color: #fff;
     }
 
-    .walk-part ha-icon {
+    .walk-part ha-icon,
+    .wait-part ha-icon {
       --mdc-icon-size: 13px;
       color: #fff;
       background: var(--disabled-text-color, #9e9e9e);
@@ -175,7 +195,8 @@ export class GoogleTransitJourneyBar extends LitElement {
     }
 
     .times {
-      display: flex;
+      display: grid;
+      grid-auto-flow: column;
       font-size: 0.72em;
       color: var(--secondary-text-color, #727272);
     }
@@ -183,6 +204,7 @@ export class GoogleTransitJourneyBar extends LitElement {
     .times span {
       overflow: visible;
       white-space: nowrap;
+      text-align: left;
     }
   `;
 }
