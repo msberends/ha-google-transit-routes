@@ -13,6 +13,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.loader import async_get_integration
 from homeassistant.util import slugify
 
 from .api import GoogleRoutesApiClient
@@ -114,7 +115,12 @@ async def _async_register_card(hass: HomeAssistant) -> None:
     else:
         hass.http.register_static_path(CARD_URL_PATH, file_path, cache_headers=True)
 
-    add_extra_js_url(hass, CARD_URL_PATH)
+    # The static path above is cached aggressively (cache_headers=True) at a
+    # fixed URL, so browsers never revalidate it. Append the integration
+    # version so the URL itself changes on every release, forcing a fresh
+    # fetch instead of requiring users to manually clear their cache.
+    integration = await async_get_integration(hass, DOMAIN)
+    add_extra_js_url(hass, f"{CARD_URL_PATH}?v={integration.version}")
 
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:

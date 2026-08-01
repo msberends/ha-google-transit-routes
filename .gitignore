@@ -6,3 +6,4 @@ dist/
 secrets.local
 .pytest_cache/
 .coverage
+update_live.sh
