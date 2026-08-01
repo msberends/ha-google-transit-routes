@@ -75,16 +75,18 @@ export class GoogleTransitJourneyBar extends LitElement {
         )}
       </div>
       ${this.expanded
-        ? html`<div
-            class="leg-details"
-            style="grid-template-columns: ${gridTemplateColumns}"
-          >
-            ${this.legs.map(
-              (leg) =>
-                html`<span title=${this._legDetailLabel(leg)}
-                  >${this._legDetailLabel(leg)}</span
-                >`
-            )}
+        ? html`<div class="leg-details">
+            ${this.legs.map((leg) => {
+              const label = this._legDetailLabel(leg);
+              return label
+                ? html`<div class="leg-detail-row">
+                    <ha-icon
+                      icon=${VEHICLE_ICONS[leg.mode] ?? "mdi:map-marker-path"}
+                    ></ha-icon>
+                    <span>${label}</span>
+                  </div>`
+                : nothing;
+            })}
           </div>`
         : nothing}
     `;
@@ -100,7 +102,7 @@ export class GoogleTransitJourneyBar extends LitElement {
       : leg.departure_time_local;
   }
 
-  /** "Groningen → UMCG Noord · 4 stops" — only meaningful for transit legs. */
+  /** "Hereplein → Hoofdstation · 4 stops" — only meaningful for transit legs. */
   private _legDetailLabel(leg: LegData): string {
     if (leg.mode === "WALK" || !leg.departure_stop || !leg.arrival_stop) {
       return "";
@@ -117,7 +119,18 @@ export class GoogleTransitJourneyBar extends LitElement {
               : "stops"
         }`
       : "";
-    return `${leg.departure_stop} → ${leg.arrival_stop}${stops}`;
+    return `${this._stripCityPrefix(leg.departure_stop)} → ${this._stripCityPrefix(
+      leg.arrival_stop
+    )}${stops}`;
+  }
+
+  /** Bus/tram stop names come back from the API as "City, Stop Name"; the
+   * city prefix is redundant here (the route header already names the
+   * cities) and just eats space. Train stations are typically a bare name
+   * with no comma, so they pass through unchanged. */
+  private _stripCityPrefix(stopName: string): string {
+    const commaIndex = stopName.indexOf(",");
+    return commaIndex === -1 ? stopName : stopName.slice(commaIndex + 1).trim();
   }
 
   /** Elapsed seconds for a leg: its actual departure→arrival span when known
@@ -218,20 +231,30 @@ export class GoogleTransitJourneyBar extends LitElement {
     }
 
     .leg-details {
-      display: grid;
-      grid-auto-flow: column;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
       font-size: 0.72em;
       font-style: italic;
       color: var(--secondary-text-color, #727272);
-      margin-top: 2px;
+      margin-top: 4px;
     }
 
-    .leg-details span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      text-align: left;
-      padding-right: 6px;
+    .leg-detail-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 4px;
+    }
+
+    .leg-detail-row ha-icon {
+      --mdc-icon-size: 13px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .leg-detail-row span {
+      white-space: normal;
+      overflow-wrap: break-word;
     }
   `;
 }

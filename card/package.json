@@ -1,6 +1,6 @@
 {
   "name": "google-transit-routes-card",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "private": true,
   "description": "Lovelace card for the Google Transit Routes Home Assistant integration.",
   "scripts": {
