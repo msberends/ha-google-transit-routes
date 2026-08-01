@@ -7,11 +7,13 @@ from pathlib import Path
 
 import voluptuous as vol
 from homeassistant.components.frontend import add_extra_js_url
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.core import HomeAssistant, ServiceCall, ServiceResponse, SupportsResponse
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.util import slugify
 
 from .api import GoogleRoutesApiClient
 from .const import (
@@ -27,11 +29,17 @@ from .const import (
     ATTR_TRAFFIC_MODEL,
     ATTR_TRANSIT_MODE,
     CONF_API_KEY,
+    CONF_DESTINATION,
+    CONF_LANGUAGE,
+    CONF_ORIGIN,
+    CONF_ROUTE_NAME,
+    CONF_ROUTES,
     DEFAULT_ALTERNATIVES,
     DEFAULT_LANGUAGE,
     DOMAIN,
     SERVICE_GET_TRANSIT_ROUTE,
     SERVICE_GET_TRAVEL_TIME,
+    SUBENTRY_TYPE_ROUTE,
 )
 from .exceptions import GoogleRoutesApiError
 from .helpers import parse_transit_response, parse_travel_response, resolve_location
@@ -110,8 +118,56 @@ async def _async_register_card(hass: HomeAssistant) -> None:
 
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Reload the entry when its options change (e.g. saved routes edited)."""
+    """Reload the entry when it changes (e.g. a saved route subentry is added,
+    reconfigured, or removed)."""
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Migrate saved routes from the legacy options list into subentries.
+
+    Pre-0.2.0, every saved route lived in `entry.options[CONF_ROUTES]` and was
+    edited through a bespoke options-flow menu. From 0.2.0 on, each route is
+    its own config subentry, giving it a dedicated block in the integration UI
+    with proper add/reconfigure/remove support. This runs once per entry, the
+    first time it's loaded after upgrading.
+    """
+    if entry.version == 1 and entry.minor_version == 1:
+        entity_registry = er.async_get(hass)
+
+        for route in entry.options.get(CONF_ROUTES, []):
+            subentry = ConfigSubentry(
+                data={
+                    CONF_ORIGIN: route[CONF_ORIGIN],
+                    CONF_DESTINATION: route[CONF_DESTINATION],
+                    CONF_LANGUAGE: route.get(CONF_LANGUAGE, DEFAULT_LANGUAGE),
+                },
+                subentry_type=SUBENTRY_TYPE_ROUTE,
+                title=route[CONF_ROUTE_NAME],
+                unique_id=None,
+            )
+            hass.config_entries.async_add_subentry(entry, subentry)
+
+            legacy_unique_id = f"{DOMAIN}_{slugify(route[CONF_ROUTE_NAME])}"
+            entity_id = entity_registry.async_get_entity_id(
+                "sensor", DOMAIN, legacy_unique_id
+            )
+            if entity_id is not None:
+                # Re-point the existing entity at the new subentry, keeping its
+                # entity_id (and history/automations/dashboards) intact. Pre-0.2.0
+                # sensors had no device, so there's no device to migrate here —
+                # sensor.py creates the (new) per-route device on next setup.
+                entity_registry.async_update_entity(
+                    entity_id,
+                    config_subentry_id=subentry.subentry_id,
+                    new_unique_id=subentry.subentry_id,
+                )
+
+        hass.config_entries.async_update_entry(
+            entry, options={}, minor_version=2
+        )
+
+    return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

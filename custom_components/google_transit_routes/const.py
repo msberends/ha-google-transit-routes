@@ -33,12 +33,15 @@ TRAVEL_FIELD_MASK = ",".join(
 
 # Config / options keys
 CONF_API_KEY = "api_key"
-CONF_ROUTES = "routes"
+CONF_ROUTES = "routes"  # legacy-only: pre-subentry options storage, read during migration
 CONF_ROUTE_NAME = "name"
 CONF_ORIGIN = "origin"
 CONF_DESTINATION = "destination"
 CONF_LANGUAGE = "language"
 CONF_UPDATE_INTERVAL = "update_interval"
+
+# Each saved route is a config subentry of this type.
+SUBENTRY_TYPE_ROUTE = "route"
 
 # Service / action input keys
 ATTR_ORIGIN = "origin"

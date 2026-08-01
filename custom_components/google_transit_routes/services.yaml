@@ -55,16 +55,12 @@ get_transit_route:
         select:
           multiple: true
           options:
-            - label: Bus
-              value: bus
-            - label: Subway
-              value: subway
-            - label: Train
-              value: train
-            - label: Light rail
-              value: light_rail
-            - label: Rail
-              value: rail
+            - "bus"
+            - "subway"
+            - "train"
+            - "light_rail"
+            - "rail"
+          translation_key: "transit_mode"
     routing_preference:
       name: Routing preference
       description: Preference for the transit route.
@@ -72,10 +68,9 @@ get_transit_route:
       selector:
         select:
           options:
-            - label: Less walking
-              value: less_walking
-            - label: Fewer transfers
-              value: fewer_transfers
+            - "less_walking"
+            - "fewer_transfers"
+          translation_key: "routing_preference"
 
 get_travel_time:
   name: Get travel time
@@ -104,14 +99,11 @@ get_travel_time:
       selector:
         select:
           options:
-            - label: Driving
-              value: driving
-            - label: Walking
-              value: walking
-            - label: Bicycling
-              value: bicycling
-            - label: Two-wheeler
-              value: two_wheeler
+            - "driving"
+            - "walking"
+            - "bicycling"
+            - "two_wheeler"
+          translation_key: "travel_mode"
     language:
       name: Language
       description: BCP-47 language code for localised text in the response.
@@ -135,14 +127,11 @@ get_travel_time:
         select:
           multiple: true
           options:
-            - label: Tolls
-              value: tolls
-            - label: Highways
-              value: highways
-            - label: Ferries
-              value: ferries
-            - label: Indoor
-              value: indoor
+            - "tolls"
+            - "highways"
+            - "ferries"
+            - "indoor"
+          translation_key: "avoid"
     traffic_model:
       name: Traffic model
       description: Traffic prediction model to use for driving routes with a departure time.
@@ -150,9 +139,7 @@ get_travel_time:
       selector:
         select:
           options:
-            - label: Best guess
-              value: best_guess
-            - label: Pessimistic
-              value: pessimistic
-            - label: Optimistic
-              value: optimistic
+            - "best_guess"
+            - "pessimistic"
+            - "optimistic"
+          translation_key: "traffic_model"

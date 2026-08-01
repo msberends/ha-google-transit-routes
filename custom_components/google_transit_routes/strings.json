@@ -8,59 +8,12 @@
           "api_key": "API key"
         }
       },
-      "add_route": {
-        "title": "Add a saved route (optional)",
-        "description": "You can add a named route now, or skip this and only use the get_transit_route action for on-demand queries.",
-        "data": {
-          "name": "Name",
-          "origin": "Origin",
-          "destination": "Destination",
-          "language": "Language",
-          "add_another": "Add another route after this one"
-        }
-      }
-    },
-    "error": {
-      "invalid_api_key": "The API key is invalid or does not have the Routes API enabled.",
-      "invalid_request": "The test request was rejected. Check the API key and try again.",
-      "rate_limited": "The API quota has been exceeded. Try again later.",
-      "cannot_connect": "Could not connect to the Google Routes API.",
-      "unknown": "Unexpected error."
-    },
-    "abort": {
-      "already_configured": "Google Transit Routes is already configured."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Google Transit Routes options",
-        "menu_options": {
-          "change_api_key": "Change API key",
-          "add_route": "Add a saved route",
-          "remove_route": "Remove a saved route"
-        }
-      },
-      "change_api_key": {
+      "reconfigure": {
         "title": "Change API key",
+        "description": "Enter a new Google Routes API key. It will be validated with a test request before it replaces the current one.",
         "data": {
           "api_key": "API key"
         }
-      },
-      "add_route": {
-        "title": "Add a saved route",
-        "data": {
-          "name": "Name",
-          "origin": "Origin",
-          "destination": "Destination",
-          "language": "Language"
-        }
-      },
-      "remove_route": {
-        "title": "Remove a saved route",
-        "data": {
-          "route_name": "Route(s) to remove"
-        }
       }
     },
     "error": {
@@ -71,7 +24,93 @@
       "unknown": "Unexpected error."
     },
     "abort": {
-      "no_routes": "There are no saved routes to remove."
+      "already_configured": "Google Transit Routes is already configured.",
+      "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
+    }
+  },
+  "config_subentries": {
+    "route": {
+      "entry_type": "Saved route",
+      "initiate_flow": {
+        "user": "Add saved route"
+      },
+      "step": {
+        "user": {
+          "title": "Add a saved route",
+          "description": "> [!NOTE]\n> The resulting sensor fetches once when the integration loads, then never polls again — by design, to protect the free API quota. To refresh it afterwards, call the `homeassistant.update_entity` action targeting the sensor, e.g. from a time or zone automation. See the [README](https://github.com/msberends/ha-google-transit-routes#usage-sensors) for details.",
+          "data": {
+            "name": "Name",
+            "origin": "Origin",
+            "destination": "Destination",
+            "language": "Language"
+          },
+          "data_description": {
+            "name": "A short, unique label for this route — becomes both the device name and the sensor's name.",
+            "origin": "Address, \"lat,lng\" coordinates, or entity ID (zone.xxx, person.xxx, device_tracker.xxx).",
+            "destination": "Same formats as origin."
+          }
+        },
+        "reconfigure": {
+          "title": "Edit saved route",
+          "data": {
+            "name": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::name%]",
+            "origin": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::origin%]",
+            "destination": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::destination%]",
+            "language": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::language%]"
+          },
+          "data_description": {
+            "name": "[%key:component::google_transit_routes::config_subentries::route::step::user::data_description::name%]",
+            "origin": "[%key:component::google_transit_routes::config_subentries::route::step::user::data_description::origin%]",
+            "destination": "[%key:component::google_transit_routes::config_subentries::route::step::user::data_description::destination%]"
+          }
+        }
+      },
+      "error": {
+        "already_configured": "A saved route with this name already exists."
+      },
+      "abort": {
+        "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
+      }
+    }
+  },
+  "selector": {
+    "transit_mode": {
+      "options": {
+        "bus": "Bus",
+        "subway": "Subway",
+        "train": "Train",
+        "light_rail": "Light rail",
+        "rail": "Rail"
+      }
+    },
+    "routing_preference": {
+      "options": {
+        "less_walking": "Less walking",
+        "fewer_transfers": "Fewer transfers"
+      }
+    },
+    "travel_mode": {
+      "options": {
+        "driving": "Driving",
+        "walking": "Walking",
+        "bicycling": "Bicycling",
+        "two_wheeler": "Two-wheeler"
+      }
+    },
+    "avoid": {
+      "options": {
+        "tolls": "Tolls",
+        "highways": "Highways",
+        "ferries": "Ferries",
+        "indoor": "Indoor"
+      }
+    },
+    "traffic_model": {
+      "options": {
+        "best_guess": "Best guess",
+        "pessimistic": "Pessimistic",
+        "optimistic": "Optimistic"
+      }
     }
   },
   "services": {

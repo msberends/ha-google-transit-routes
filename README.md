@@ -86,11 +86,23 @@ Configuration happens entirely through the UI:
    Routes**.
 2. Enter your [Google Routes API key](#api-key-setup). It's validated with a
    live test request before you can continue.
-3. Optionally add one or more named routes (origin, destination, language).
-   Each saved route becomes a sensor. You can skip this step and only use the
-   actions for on-demand queries.
-4. Afterwards, use the integration's **Configure** option to add/remove saved
-   routes or change the API key at any time.
+3. You'll be prompted to add your first saved route (origin, destination,
+   language) right away — or dismiss that dialog and only use the actions
+   for on-demand queries.
+
+Each saved route is its own **sub-entry** of the integration, shown as its
+own block/device on the integration's page (Settings → Devices & Services →
+Google Transit Routes) — not buried in a shared options menu:
+
+- **Add a route**: on the integration's page, click **Add sub-entry** (or
+  the **+** next to "Saved route").
+- **Edit a route**: open the route's device page and choose **Reconfigure**
+  from its "⋮" menu — every field (name, origin, destination, language) can
+  be changed, including renaming, without losing the sensor's history or
+  breaking dashboards/automations that reference it.
+- **Remove a route**: same "⋮" menu → **Delete**.
+- **Change the API key**: on the integration's own entry (not a route),
+  choose **Reconfigure**.
 
 ## Usage: Actions
 
@@ -130,14 +142,18 @@ inspect the response there directly.
 
 ## Usage: Sensors
 
-Each saved route is exposed as `sensor.google_transit_<slugified_name>`.
-**It never polls automatically** — trigger it explicitly:
+Each saved route is exposed as one sensor, named after the route (e.g. a
+route named "UMCG naar Meadowfield" becomes
+`sensor.umcg_naar_meadowfield`) — check the route's device page for its
+exact entity ID. It fetches once when the integration loads (so it isn't
+blank after setup or a restart), but **never polls automatically after
+that** — trigger further refreshes explicitly:
 
 ```yaml
 actions:
   - action: homeassistant.update_entity
     target:
-      entity_id: sensor.google_transit_umcg_to_meadowfield
+      entity_id: sensor.umcg_naar_meadowfield
 ```
 
 A simple entities card:
@@ -145,7 +161,7 @@ A simple entities card:
 ```yaml
 type: entities
 entities:
-  - entity: sensor.google_transit_umcg_to_meadowfield
+  - entity: sensor.umcg_naar_meadowfield
     name: "Volgende trein naar Meadowfield"
 ```
 
@@ -168,7 +184,7 @@ automation:
     action:
       - action: homeassistant.update_entity
         target:
-          entity_id: sensor.google_transit_umcg_to_meadowfield
+          entity_id: sensor.umcg_naar_meadowfield
 ```
 
 ## Usage: Dashboard card
@@ -177,10 +193,10 @@ automation:
 type: custom:google-transit-routes-card
 title: "Reistijden"
 entities:
-  - entity: sensor.google_transit_umcg_to_meadowfield
+  - entity: sensor.umcg_naar_meadowfield
     name: "Alice → Meadowfield"
     icon: mdi:train
-  - entity: sensor.google_transit_meadowfield_to_umcg
+  - entity: sensor.meadowfield_naar_umcg
     name: "Naar het UMCG"
     icon: mdi:hospital-building
 show_alternatives: true

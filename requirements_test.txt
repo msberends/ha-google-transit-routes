@@ -1,3 +1,10 @@
 pytest
 pytest-homeassistant-custom-component
 homeassistant
+
+# Requires Python 3.13+. pytest-homeassistant-custom-component stopped
+# publishing Python-3.12-compatible wheels after 0.13.205, which pins
+# homeassistant==2025.1.4 — too old to have config subentries
+# (homeassistant.config_entries.ConfigSubentry), which this integration's
+# config flow depends on. See CLAUDE.md for how to get a Python 3.13
+# interpreter without touching system packages.

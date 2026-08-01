@@ -8,59 +8,12 @@
           "api_key": "API-sleutel"
         }
       },
-      "add_route": {
-        "title": "Een opgeslagen route toevoegen (optioneel)",
-        "description": "U kunt nu een genoemde route toevoegen, of dit overslaan en alleen de get_transit_route-actie gebruiken voor losse aanvragen.",
-        "data": {
-          "name": "Naam",
-          "origin": "Vertrekpunt",
-          "destination": "Bestemming",
-          "language": "Taal",
-          "add_another": "Nog een route toevoegen hierna"
-        }
-      }
-    },
-    "error": {
-      "invalid_api_key": "De API-sleutel is ongeldig of heeft de Routes API niet ingeschakeld.",
-      "invalid_request": "Het testverzoek is afgewezen. Controleer de API-sleutel en probeer het opnieuw.",
-      "rate_limited": "Het API-quotum is overschreden. Probeer het later opnieuw.",
-      "cannot_connect": "Kon geen verbinding maken met de Google Routes API.",
-      "unknown": "Onverwachte fout."
-    },
-    "abort": {
-      "already_configured": "Google Transit Routes is al geconfigureerd."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Google Transit Routes opties",
-        "menu_options": {
-          "change_api_key": "API-sleutel wijzigen",
-          "add_route": "Een opgeslagen route toevoegen",
-          "remove_route": "Een opgeslagen route verwijderen"
-        }
-      },
-      "change_api_key": {
+      "reconfigure": {
         "title": "API-sleutel wijzigen",
+        "description": "Voer een nieuwe Google Routes API-sleutel in. Deze wordt met een testverzoek gevalideerd voordat de huidige sleutel wordt vervangen.",
         "data": {
           "api_key": "API-sleutel"
         }
-      },
-      "add_route": {
-        "title": "Een opgeslagen route toevoegen",
-        "data": {
-          "name": "Naam",
-          "origin": "Vertrekpunt",
-          "destination": "Bestemming",
-          "language": "Taal"
-        }
-      },
-      "remove_route": {
-        "title": "Een opgeslagen route verwijderen",
-        "data": {
-          "route_name": "Te verwijderen route(s)"
-        }
       }
     },
     "error": {
@@ -71,7 +24,93 @@
       "unknown": "Onverwachte fout."
     },
     "abort": {
-      "no_routes": "Er zijn geen opgeslagen routes om te verwijderen."
+      "already_configured": "Google Transit Routes is al geconfigureerd.",
+      "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
+    }
+  },
+  "config_subentries": {
+    "route": {
+      "entry_type": "Opgeslagen route",
+      "initiate_flow": {
+        "user": "Opgeslagen route toevoegen"
+      },
+      "step": {
+        "user": {
+          "title": "Een opgeslagen route toevoegen",
+          "description": "> [!NOTE]\n> De bijbehorende sensor haalt eenmalig gegevens op zodra de integratie laadt, en daarna niet meer automatisch — dit is bewust, om het gratis API-quotum te sparen. Ververs de sensor daarna via de actie `homeassistant.update_entity`, bijvoorbeeld vanuit een tijd- of zone-automatisering. Zie de [README](https://github.com/msberends/ha-google-transit-routes#usage-sensors) voor details.",
+          "data": {
+            "name": "Naam",
+            "origin": "Vertrekpunt",
+            "destination": "Bestemming",
+            "language": "Taal"
+          },
+          "data_description": {
+            "name": "Een korte, unieke naam voor deze route — wordt zowel de apparaatnaam als de naam van de sensor.",
+            "origin": "Adres, \"lat,lng\"-coördinaten, of entity-ID (zone.xxx, person.xxx, device_tracker.xxx).",
+            "destination": "Dezelfde formaten als vertrekpunt."
+          }
+        },
+        "reconfigure": {
+          "title": "Opgeslagen route bewerken",
+          "data": {
+            "name": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::name%]",
+            "origin": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::origin%]",
+            "destination": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::destination%]",
+            "language": "[%key:component::google_transit_routes::config_subentries::route::step::user::data::language%]"
+          },
+          "data_description": {
+            "name": "[%key:component::google_transit_routes::config_subentries::route::step::user::data_description::name%]",
+            "origin": "[%key:component::google_transit_routes::config_subentries::route::step::user::data_description::origin%]",
+            "destination": "[%key:component::google_transit_routes::config_subentries::route::step::user::data_description::destination%]"
+          }
+        }
+      },
+      "error": {
+        "already_configured": "Er bestaat al een opgeslagen route met deze naam."
+      },
+      "abort": {
+        "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
+      }
+    }
+  },
+  "selector": {
+    "transit_mode": {
+      "options": {
+        "bus": "Bus",
+        "subway": "Metro",
+        "train": "Trein",
+        "light_rail": "Sneltram",
+        "rail": "Spoor"
+      }
+    },
+    "routing_preference": {
+      "options": {
+        "less_walking": "Minder lopen",
+        "fewer_transfers": "Minder overstappen"
+      }
+    },
+    "travel_mode": {
+      "options": {
+        "driving": "Auto",
+        "walking": "Lopen",
+        "bicycling": "Fietsen",
+        "two_wheeler": "Snorfiets/scooter"
+      }
+    },
+    "avoid": {
+      "options": {
+        "tolls": "Tol",
+        "highways": "Snelwegen",
+        "ferries": "Veerboten",
+        "indoor": "Overdekte routes"
+      }
+    },
+    "traffic_model": {
+      "options": {
+        "best_guess": "Beste schatting",
+        "pessimistic": "Pessimistisch",
+        "optimistic": "Optimistisch"
+      }
     }
   },
   "services": {

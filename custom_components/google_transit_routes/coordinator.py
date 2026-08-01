@@ -11,11 +11,12 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from homeassistant.config_entries import ConfigSubentry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import GoogleRoutesApiClient
-from .const import CONF_DESTINATION, CONF_LANGUAGE, CONF_ORIGIN, CONF_ROUTE_NAME, DEFAULT_LANGUAGE, DOMAIN
+from .const import CONF_DESTINATION, CONF_LANGUAGE, CONF_ORIGIN, DEFAULT_LANGUAGE, DOMAIN
 from .exceptions import GoogleRoutesApiError
 from .helpers import parse_transit_response, resolve_location
 
@@ -29,26 +30,25 @@ class GoogleTransitRouteCoordinator(DataUpdateCoordinator[list[dict[str, Any]]])
         self,
         hass: HomeAssistant,
         client: GoogleRoutesApiClient,
-        route_config: dict[str, Any],
+        subentry: ConfigSubentry,
     ) -> None:
         """Initialise the coordinator for one saved route."""
         super().__init__(
             hass,
             _LOGGER,
-            name=f"{DOMAIN}_{route_config[CONF_ROUTE_NAME]}",
+            name=f"{DOMAIN}_{subentry.title}",
             update_interval=None,
         )
         self.client = client
-        self.route_config = route_config
+        self.subentry = subentry
 
     async def _async_update_data(self) -> list[dict[str, Any]]:
         """Fetch a fresh set of routes from the Google Routes API."""
-        language = self.route_config.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
+        route_data = self.subentry.data
+        language = route_data.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
         try:
-            origin = resolve_location(self.hass, self.route_config[CONF_ORIGIN])
-            destination = resolve_location(
-                self.hass, self.route_config[CONF_DESTINATION]
-            )
+            origin = resolve_location(self.hass, route_data[CONF_ORIGIN])
+            destination = resolve_location(self.hass, route_data[CONF_DESTINATION])
             response = await self.client.get_transit_route(
                 origin=origin,
                 destination=destination,

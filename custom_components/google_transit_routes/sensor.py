@@ -2,27 +2,19 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import dt as dt_util
-from homeassistant.util import slugify
 
-from .const import (
-    ATTRIBUTION,
-    CONF_DESTINATION,
-    CONF_LANGUAGE,
-    CONF_ORIGIN,
-    CONF_ROUTE_NAME,
-    CONF_ROUTES,
-    DEFAULT_LANGUAGE,
-    DOMAIN,
-)
+from .const import ATTRIBUTION, CONF_DESTINATION, CONF_LANGUAGE, CONF_ORIGIN, DEFAULT_LANGUAGE, DOMAIN
 from .coordinator import GoogleTransitRouteCoordinator
 from .helpers import compute_duration_from_now
 
@@ -30,23 +22,30 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Set up sensor entities for each saved route."""
+    """Set up one sensor entity per saved-route subentry."""
     entry_data = hass.data[DOMAIN][entry.entry_id]
     client = entry_data["client"]
-    routes = entry.options.get(CONF_ROUTES, [])
 
     coordinators: dict[str, GoogleTransitRouteCoordinator] = {}
-    entities: list[GoogleTransitSensor] = []
 
-    for route_config in routes:
-        coordinator = GoogleTransitRouteCoordinator(hass, client, route_config)
-        coordinators[route_config[CONF_ROUTE_NAME]] = coordinator
-        entities.append(GoogleTransitSensor(coordinator, route_config))
+    for subentry_id, subentry in entry.subentries.items():
+        coordinator = GoogleTransitRouteCoordinator(hass, client, subentry)
+        coordinators[subentry_id] = coordinator
+        async_add_entities(
+            [GoogleTransitSensor(coordinator, subentry)],
+            config_subentry_id=subentry_id,
+        )
 
     entry_data["coordinators"] = coordinators
-    async_add_entities(entities)
+
+    if coordinators:
+        await asyncio.gather(
+            *(coordinator.async_refresh() for coordinator in coordinators.values())
+        )
 
 
 class GoogleTransitSensor(CoordinatorEntity[GoogleTransitRouteCoordinator], SensorEntity):
@@ -59,18 +58,23 @@ class GoogleTransitSensor(CoordinatorEntity[GoogleTransitRouteCoordinator], Sens
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_attribution = ATTRIBUTION
     _attr_should_poll = False
+    _attr_has_entity_name = True
+    _attr_name = None
 
     def __init__(
-        self, coordinator: GoogleTransitRouteCoordinator, route_config: dict[str, Any]
+        self, coordinator: GoogleTransitRouteCoordinator, subentry: ConfigSubentry
     ) -> None:
         """Initialise the sensor for one saved route."""
         super().__init__(coordinator)
-        self._route_config = route_config
-        name = route_config[CONF_ROUTE_NAME]
-        slug = slugify(name)
-        self._attr_name = name
-        self._attr_unique_id = f"{DOMAIN}_{slug}"
-        self.entity_id = f"sensor.google_transit_{slug}"
+        self._subentry = subentry
+        self._attr_unique_id = subentry.subentry_id
+        self._attr_device_info = DeviceInfo(
+            entry_type=DeviceEntryType.SERVICE,
+            identifiers={(DOMAIN, subentry.subentry_id)},
+            name=subentry.title,
+            manufacturer="Google",
+            model="Transit route",
+        )
 
     @property
     def native_value(self):
@@ -84,8 +88,8 @@ class GoogleTransitSensor(CoordinatorEntity[GoogleTransitRouteCoordinator], Sens
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return route details; duration_from_now is recomputed on every read."""
         attributes: dict[str, Any] = {
-            "origin": self._route_config[CONF_ORIGIN],
-            "destination": self._route_config[CONF_DESTINATION],
+            "origin": self._subentry.data[CONF_ORIGIN],
+            "destination": self._subentry.data[CONF_DESTINATION],
             "attribution": ATTRIBUTION,
         }
 
@@ -93,7 +97,7 @@ class GoogleTransitSensor(CoordinatorEntity[GoogleTransitRouteCoordinator], Sens
         if not routes:
             return attributes
 
-        language = self._route_config.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
+        language = self._subentry.data.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
         primary = routes[0]
         alternatives = routes[1:]
 
