@@ -95,7 +95,7 @@ own block/device on the integration's page (Settings → Devices & Services →
 Google Transit Routes) — not buried in a shared options menu:
 
 - **Add a route**: on the integration's page, click **Add sub-entry** (or
-  the **+** next to "Saved route").
+  the **+** next to "Saved transit route").
 - **Edit a route**: open the route's device page and choose **Reconfigure**
   from its "⋮" menu — every field (name, origin, destination, language) can
   be changed, including renaming, without losing the sensor's history or

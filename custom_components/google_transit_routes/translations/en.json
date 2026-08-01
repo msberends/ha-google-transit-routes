@@ -30,13 +30,13 @@
   },
   "config_subentries": {
     "route": {
-      "entry_type": "Saved route",
+      "entry_type": "Saved transit route",
       "initiate_flow": {
-        "user": "Add saved route"
+        "user": "Add saved transit route"
       },
       "step": {
         "user": {
-          "title": "Add a saved route",
+          "title": "Add a saved transit route",
           "description": "> [!NOTE]\n> The resulting sensor fetches once when the integration loads, then never polls again — by design, to protect the free API quota. To refresh it afterwards, call the `homeassistant.update_entity` action targeting the sensor, e.g. from a time or zone automation. See the [README](https://github.com/msberends/ha-google-transit-routes#usage-sensors) for details.",
           "data": {
             "name": "Name",
@@ -45,13 +45,13 @@
             "language": "Language"
           },
           "data_description": {
-            "name": "A short, unique label for this route — becomes both the device name and the sensor's name.",
+            "name": "A short, unique label for this transit route — becomes both the device name and the sensor's name.",
             "origin": "Address, \"lat,lng\" coordinates, or entity ID (zone.xxx, person.xxx, device_tracker.xxx).",
             "destination": "Same formats as origin."
           }
         },
         "reconfigure": {
-          "title": "Edit saved route",
+          "title": "Edit saved transit route",
           "data": {
             "name": "Name",
             "origin": "Origin",
@@ -59,14 +59,14 @@
             "language": "Language"
           },
           "data_description": {
-            "name": "A short, unique label for this route — becomes both the device name and the sensor's name.",
+            "name": "A short, unique label for this transit route — becomes both the device name and the sensor's name.",
             "origin": "Address, \"lat,lng\" coordinates, or entity ID (zone.xxx, person.xxx, device_tracker.xxx).",
             "destination": "Same formats as origin."
           }
         }
       },
       "error": {
-        "already_configured": "A saved route with this name already exists."
+        "already_configured": "A saved transit route with this name already exists."
       },
       "abort": {
         "reconfigure_successful": "Re-configuration was successful."

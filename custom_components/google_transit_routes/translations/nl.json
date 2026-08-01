@@ -30,13 +30,13 @@
   },
   "config_subentries": {
     "route": {
-      "entry_type": "Opgeslagen route",
+      "entry_type": "Opgeslagen OV-route",
       "initiate_flow": {
-        "user": "Opgeslagen route toevoegen"
+        "user": "Opgeslagen OV-route toevoegen"
       },
       "step": {
         "user": {
-          "title": "Een opgeslagen route toevoegen",
+          "title": "Een opgeslagen OV-route toevoegen",
           "description": "> [!NOTE]\n> De bijbehorende sensor haalt eenmalig gegevens op zodra de integratie laadt, en daarna niet meer automatisch — dit is bewust, om het gratis API-quotum te sparen. Ververs de sensor daarna via de actie `homeassistant.update_entity`, bijvoorbeeld vanuit een tijd- of zone-automatisering. Zie de [README](https://github.com/msberends/ha-google-transit-routes#usage-sensors) voor details.",
           "data": {
             "name": "Naam",
@@ -45,13 +45,13 @@
             "language": "Taal"
           },
           "data_description": {
-            "name": "Een korte, unieke naam voor deze route — wordt zowel de apparaatnaam als de naam van de sensor.",
+            "name": "Een korte, unieke naam voor deze OV-route — wordt zowel de apparaatnaam als de naam van de sensor.",
             "origin": "Adres, \"lat,lng\"-coördinaten, of entity-ID (zone.xxx, person.xxx, device_tracker.xxx).",
             "destination": "Dezelfde formaten als vertrekpunt."
           }
         },
         "reconfigure": {
-          "title": "Opgeslagen route bewerken",
+          "title": "Opgeslagen OV-route bewerken",
           "data": {
             "name": "Naam",
             "origin": "Vertrekpunt",
@@ -59,14 +59,14 @@
             "language": "Taal"
           },
           "data_description": {
-            "name": "Een korte, unieke naam voor deze route — wordt zowel de apparaatnaam als de naam van de sensor.",
+            "name": "Een korte, unieke naam voor deze OV-route — wordt zowel de apparaatnaam als de naam van de sensor.",
             "origin": "Adres, \"lat,lng\"-coördinaten, of entity-ID (zone.xxx, person.xxx, device_tracker.xxx).",
             "destination": "Dezelfde formaten als vertrekpunt."
           }
         }
       },
       "error": {
-        "already_configured": "Er bestaat al een opgeslagen route met deze naam."
+        "already_configured": "Er bestaat al een opgeslagen OV-route met deze naam."
       },
       "abort": {
         "reconfigure_successful": "Herconfiguratie geslaagd."
