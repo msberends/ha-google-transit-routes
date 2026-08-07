@@ -4,6 +4,7 @@ import type { LegData } from "./types";
 import { VEHICLE_ICONS } from "./icons";
 import { formatDuration } from "./duration";
 import { isTrainMode, stripNegligibleTrailingWalk } from "./legs";
+import { agencyColor } from "./agency-colors";
 
 /** Horizontal journey bar: one coloured segment per transit leg, striped for walks. */
 @customElement("google-transit-journey-bar")
@@ -41,7 +42,10 @@ export class GoogleTransitJourneyBar extends LitElement {
         ${legs.map((leg, i) => {
           const isWalk = leg.mode === "WALK";
           const icon = VEHICLE_ICONS[leg.mode] ?? "mdi:map-marker-path";
-          const color = leg.line_color || "var(--secondary-text-color, #727272)";
+          const color =
+            leg.line_color ||
+            agencyColor(leg.agency) ||
+            "var(--secondary-text-color, #727272)";
           const walkSeconds = Math.min(leg.duration || 0, spans[i]);
           const waitSeconds = spans[i] - walkSeconds;
           return html`

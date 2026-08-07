@@ -6,6 +6,7 @@ import { cardStyles } from "./styles";
 import { VEHICLE_ICONS } from "./icons";
 import { formatDuration } from "./duration";
 import { stripNegligibleTrailingWalk } from "./legs";
+import { agencyColor } from "./agency-colors";
 import type {
   EntityConfig,
   GoogleTransitRoutesCardConfig,
@@ -274,7 +275,8 @@ export class GoogleTransitRoutesCard extends LitElement {
   private _renderAltLeg(leg: LegData): TemplateResult {
     const duration = formatDuration(leg.duration || 0);
     if (NUMBERED_LINE_MODES.has(leg.mode) && leg.line_name) {
-      const color = leg.line_color || "var(--secondary-text-color, #727272)";
+      const color =
+        leg.line_color || agencyColor(leg.agency) || "var(--secondary-text-color, #727272)";
       return html`<span class="alt-leg"
         ><span class="alt-line-badge" style="background: ${color}"
           >${leg.line_name}</span
@@ -284,9 +286,11 @@ export class GoogleTransitRoutesCard extends LitElement {
     }
     const isWalk = leg.mode === "WALK";
     const icon = VEHICLE_ICONS[leg.mode] ?? "mdi:map-marker-path";
+    const modeColor = !isWalk ? leg.line_color || agencyColor(leg.agency) : undefined;
     return html`<span class="alt-leg"
       ><ha-icon
         class=${isWalk ? "alt-walk-icon" : "alt-mode-icon"}
+        style=${modeColor ? `color: ${modeColor}` : ""}
         icon=${icon}
       ></ha-icon>
       (${duration})</span
