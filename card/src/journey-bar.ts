@@ -3,6 +3,7 @@ import { customElement, property } from "lit/decorators.js";
 import type { LegData } from "./types";
 import { VEHICLE_ICONS } from "./icons";
 import { formatDuration } from "./duration";
+import { isTrainMode, stripNegligibleTrailingWalk } from "./legs";
 
 /** Horizontal journey bar: one coloured segment per transit leg, striped for walks. */
 @customElement("google-transit-journey-bar")
@@ -16,6 +17,11 @@ export class GoogleTransitJourneyBar extends LitElement {
       return html``;
     }
 
+    const legs = stripNegligibleTrailingWalk(this.legs);
+    if (!legs.length) {
+      return html``;
+    }
+
     // A walk leg's own span (departure_time → arrival_time) can be longer
     // than its real walking duration when it's chained up to a connecting
     // transit leg that doesn't depart right away — the difference is time
@@ -23,7 +29,7 @@ export class GoogleTransitJourneyBar extends LitElement {
     // bar reflects real elapsed time) but split each walk block visually
     // into its walking and waiting parts, so a short walk with a long wait
     // doesn't just look like a long walk.
-    const spans = this.legs.map((leg) => this._spanSeconds(leg));
+    const spans = legs.map((leg) => this._spanSeconds(leg));
     const totalDuration = spans.reduce((sum, s) => sum + s, 0) || 1;
     const widths = spans.map((s) => Math.max((s / totalDuration) * 100, 6));
     const gridTemplateColumns = widths
@@ -32,7 +38,7 @@ export class GoogleTransitJourneyBar extends LitElement {
 
     return html`
       <div class="bar" style="grid-template-columns: ${gridTemplateColumns}">
-        ${this.legs.map((leg, i) => {
+        ${legs.map((leg, i) => {
           const isWalk = leg.mode === "WALK";
           const icon = VEHICLE_ICONS[leg.mode] ?? "mdi:map-marker-path";
           const color = leg.line_color || "var(--secondary-text-color, #727272)";
@@ -69,14 +75,20 @@ export class GoogleTransitJourneyBar extends LitElement {
         })}
       </div>
       <div class="times" style="grid-template-columns: ${gridTemplateColumns}">
-        ${this.legs.map(
-          (leg, i) =>
-            html`<span>${this._legTimeLabel(leg, spans[i])}</span>`
-        )}
+        ${legs.map((leg, i) => {
+          // A walk's own span can include waiting time for the connection
+          // that follows it; the displayed duration should only ever be the
+          // time actually spent walking.
+          const displaySeconds =
+            leg.mode === "WALK"
+              ? Math.min(leg.duration || 0, spans[i])
+              : spans[i];
+          return html`<span>${this._legTimeLabel(leg, displaySeconds)}</span>`;
+        })}
       </div>
       ${this.expanded
         ? html`<div class="leg-details">
-            ${this.legs.map((leg) => {
+            ${legs.map((leg) => {
               const label = this._legDetailLabel(leg);
               return label
                 ? html`<div class="leg-detail-row">
@@ -108,15 +120,22 @@ export class GoogleTransitJourneyBar extends LitElement {
       return "";
     }
     const nl = this.language === "nl";
+    const isTrain = isTrainMode(leg.mode);
     const stops = leg.stop_count
       ? ` · ${leg.stop_count} ${
           nl
-            ? leg.stop_count === 1
-              ? "halte"
-              : "haltes"
-            : leg.stop_count === 1
-              ? "stop"
-              : "stops"
+            ? isTrain
+              ? "station" + (leg.stop_count === 1 ? "" : "s")
+              : leg.stop_count === 1
+                ? "halte"
+                : "haltes"
+            : isTrain
+              ? leg.stop_count === 1
+                ? "station"
+                : "stations"
+              : leg.stop_count === 1
+                ? "stop"
+                : "stops"
         }`
       : "";
     return `${this._stripCityPrefix(leg.departure_stop)} → ${this._stripCityPrefix(

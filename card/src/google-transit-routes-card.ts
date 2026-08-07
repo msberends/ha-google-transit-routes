@@ -5,6 +5,7 @@ import "./journey-bar";
 import { cardStyles } from "./styles";
 import { VEHICLE_ICONS } from "./icons";
 import { formatDuration } from "./duration";
+import { stripNegligibleTrailingWalk } from "./legs";
 import type {
   EntityConfig,
   GoogleTransitRoutesCardConfig,
@@ -250,7 +251,7 @@ export class GoogleTransitRoutesCard extends LitElement {
                         (${alt.duration_text})
                       </span>
                       <span class="alt-legs">
-                        ${(alt.legs || []).map(
+                        ${stripNegligibleTrailingWalk(alt.legs || []).map(
                           (leg, i) =>
                             html`${i > 0 ? ", " : ""}${this._renderAltLeg(
                               leg
